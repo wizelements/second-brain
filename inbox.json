@@ -291,5 +291,100 @@
     "priority": "low",
     "nextAction": "Define the purpose of the test",
     "confidence": 0.7
+  },
+  {
+    "id": "dch15ayx",
+    "text": "Test",
+    "category": "task",
+    "priority": "medium",
+    "source": "cli",
+    "timestamp": "2026-01-21T14:17:14Z",
+    "status": "classified",
+    "nextAction": "Test"
+  },
+  {
+    "id": "hos0wgmt",
+    "text": "TEST:",
+    "category": "task",
+    "priority": "medium",
+    "source": "cli",
+    "timestamp": "2026-01-21T16:32:27Z",
+    "status": "classified",
+    "nextAction": "TEST:"
+  },
+  {
+    "id": "j11w7zqq",
+    "text": "VERIFY:",
+    "category": "task",
+    "priority": "medium",
+    "source": "cli",
+    "timestamp": "2026-01-21T16:33:27Z",
+    "status": "classified",
+    "nextAction": "VERIFY:"
+  },
+  {
+    "id": "fb6xor44",
+    "text": "TEST:",
+    "category": "task",
+    "priority": "medium",
+    "source": "cli",
+    "timestamp": "2026-01-21T17:20:12Z",
+    "status": "classified",
+    "nextAction": "TEST:"
+  },
+  {
+    "id": "x5jm0jjf",
+    "text": "FINAL",
+    "category": "task",
+    "priority": "medium",
+    "source": "cli",
+    "timestamp": "2026-01-21T17:23:49Z",
+    "status": "classified",
+    "nextAction": "FINAL"
+  },
+  {
+    "id": "utx60smd",
+    "text": "Build authentication module for gratog",
+    "category": "task",
+    "priority": "high",
+    "source": "nlp",
+    "timestamp": "2026-01-21T17:28:36.257Z",
+    "status": "classified",
+    "nextAction": "Build authentication module for gratog"
+  },
+  {
+    "id": "m7bh92ih",
+    "text": "Gig: ACME Corp - $2500 - website redesign",
+    "category": "gig",
+    "priority": "high",
+    "source": "nlp",
+    "timestamp": "2026-01-21T17:28:41.883Z",
+    "status": "classified",
+    "nextAction": "Invoice ACME Corp",
+    "gigData": {
+      "client": "ACME Corp",
+      "amount": 2500,
+      "description": "website redesign"
+    }
+  },
+  {
+    "id": "8582r55k",
+    "text": "Remember to call mom Thursday",
+    "category": "reminder",
+    "priority": "medium",
+    "source": "nlp",
+    "timestamp": "2026-01-21T17:28:42.502Z",
+    "status": "classified",
+    "nextAction": "Remember to call mom Thursday"
+  },
+  {
+    "id": "hy6r533d",
+    "text": "Quick fix on sd-studio dark mode",
+    "category": "task",
+    "priority": "medium",
+    "source": "nlp",
+    "timestamp": "2026-01-21T17:28:43.137Z",
+    "status": "classified",
+    "nextAction": "Quick fix on sd-studio dark mode"
   }
 ]
