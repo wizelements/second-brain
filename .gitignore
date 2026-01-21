@@ -1,0 +1,22 @@
+# Sensitive data
+.env
+.env.local
+.env.*.local
+*.secret
+*.key
+.ssh/
+
+# System files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Temporary files
+*.tmp
+*.log
+*.lock
+
+# Private directories (add as needed)
+private/
+secrets/
