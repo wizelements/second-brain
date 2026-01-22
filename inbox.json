@@ -386,5 +386,45 @@
     "timestamp": "2026-01-21T17:28:43.137Z",
     "status": "classified",
     "nextAction": "Quick fix on sd-studio dark mode"
+  },
+  {
+    "id": "llp1j58v",
+    "text": "ej",
+    "category": "task",
+    "priority": "medium",
+    "source": "voice",
+    "timestamp": "2026-01-22T00:41:50Z",
+    "status": "classified",
+    "nextAction": "ej"
+  },
+  {
+    "id": "tb6w1fsv",
+    "text": "reminder",
+    "category": "reminder",
+    "priority": "medium",
+    "source": "voice",
+    "timestamp": "2026-01-22T00:42:05Z",
+    "status": "classified",
+    "nextAction": "reminder"
+  },
+  {
+    "id": "8q6l9y6f",
+    "text": "brain",
+    "category": "task",
+    "priority": "medium",
+    "source": "voice",
+    "timestamp": "2026-01-22T00:42:32Z",
+    "status": "classified",
+    "nextAction": "brain"
+  },
+  {
+    "id": "5qd2w8by",
+    "text": "h3lp",
+    "category": "task",
+    "priority": "medium",
+    "source": "voice",
+    "timestamp": "2026-01-22T00:42:41Z",
+    "status": "classified",
+    "nextAction": "h3lp"
   }
 ]
