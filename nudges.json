@@ -1,1 +1,59 @@
-[]
+[
+  {
+    "id": "nudge_gigs_pending",
+    "type": "income",
+    "text": "You have {} gigs ready for payment follow-up. Revenue pending: ${}",
+    "category": "gig",
+    "frequency": "daily",
+    "trigger": "has_gigs_not_invoiced",
+    "nextTrigger": "2026-01-23T08:00:00Z",
+    "lastFired": "2026-01-22T08:00:00Z"
+  },
+  {
+    "id": "nudge_active_count",
+    "type": "focus",
+    "text": "You have {} active items. Working on: {}",
+    "category": "task",
+    "frequency": "daily",
+    "trigger": "show_active_summary",
+    "nextTrigger": "2026-01-23T09:00:00Z",
+    "lastFired": "2026-01-22T09:00:00Z"
+  },
+  {
+    "id": "nudge_stuck_work",
+    "type": "warning",
+    "text": "You've been working on '{}' for {} days. Is it blocked?",
+    "category": "task",
+    "frequency": "weekly",
+    "trigger": "in_progress_over_14_days",
+    "nextTrigger": "2026-01-29T10:00:00Z"
+  },
+  {
+    "id": "nudge_stagnant_review",
+    "type": "warning",
+    "text": "You have {} items untouched for >7 days. Review or archive?",
+    "category": "task",
+    "frequency": "weekly",
+    "trigger": "stagnant_items_exist",
+    "nextTrigger": "2026-01-29T11:00:00Z"
+  },
+  {
+    "id": "nudge_weekly_review",
+    "type": "reflection",
+    "text": "Time for weekly review. What worked this week? What didn't?",
+    "category": "task",
+    "frequency": "weekly",
+    "trigger": "sunday_evening",
+    "nextTrigger": "2026-01-26T19:00:00Z",
+    "enabled": true
+  },
+  {
+    "id": "nudge_next_action",
+    "type": "focus",
+    "text": "Not sure what to work on? Try: brain-next",
+    "category": "task",
+    "frequency": "on-demand",
+    "trigger": "user_asks",
+    "enabled": true
+  }
+]
