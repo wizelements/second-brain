@@ -1,0 +1,273 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECOND BRAIN COMPLETE COMMAND REFERENCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📱 CORE BRAIN COMMANDS (Unchanged - Still Working)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CAPTURE
+  ba "text"                 # Quick add task/gig/reminder
+  brain-add "text"          # Full capture with options
+
+ORGANIZE
+  brain-move id status      # Move item through lifecycle
+  brain-move --active       # Show active items
+  brain-move --candidates   # Ready to activate
+  brain-move --stagnant     # >7 days untouched
+  brain-move --stuck        # >14 days in progress
+
+RETRIEVE
+  brain-ask "search"        # Keyword search (instant)
+  brain-ask --deep "query"  # Semantic search (GPT)
+  brain-connect id          # Related items
+  brain-recycle             # Ideas 30-90 days old
+  brain-recycle --remix     # Themes to combine
+
+VIEW
+  brain-home                # Dashboard
+  brain-dashboard           # Quick view
+  brain-next                # Smart next action
+  brain-nudge               # Check reminders
+
+
+🔄 SYNCHRONIZATION COMMANDS (NEW)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CONNECTIVITY & STATUS
+  windows-status            # Check all connection methods
+  sync-monitor              # Health check & diagnostics
+  sync-checker              # Pre-work verification
+
+SYNCHRONIZATION
+  windows-connect           # SSH direct (fastest, 10-30s)
+  brain-sync-bidirectional  # GitHub fallback (1-2 min)
+
+SETUP
+  setup-windows-ssh         # Configure SSH to Windows
+  setup-cron-sync           # Enable 6-hourly automation
+
+CONFLICT RESOLUTION
+  sync-resolve              # Conflict resolution guide
+
+
+🚀 QUICK WORKFLOW (Copy-Paste)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+MORNING
+  windows-status                    # Check connectivity
+  sync-checker                      # Verify clean state
+
+WORK
+  ba "task text"                    # Capture
+  brain-ask "keyword"               # Find items
+  brain-move id_here active         # Activate
+
+EVENING (Option A: SSH Fast)
+  windows-connect                   # Direct sync (10-30s)
+
+EVENING (Option B: GitHub Reliable)
+  brain-sync-bidirectional          # GitHub sync (1-2min)
+
+WEEKLY
+  sync-monitor                      # Health check
+
+
+📊 COMMAND DECISION TREE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Want to CAPTURE?
+  → ba "text"
+
+Want to ORGANIZE?
+  → brain-move id status
+
+Want to FIND?
+  → brain-ask "search"
+
+Want to SYNC?
+  → windows-status (check first)
+  → windows-connect (if SSH available)
+  → brain-sync-bidirectional (if GitHub)
+
+Want to MONITOR?
+  → sync-monitor
+
+Want to SETUP?
+  → setup-windows-ssh
+  → setup-cron-sync
+
+
+⏱️  COMMAND SPEED REFERENCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+FASTEST
+  ba "text"                 # <1 second
+  brain-ask "q"             # <1 second
+  sync-checker              # 5 seconds
+  windows-status            # 10 seconds
+
+FAST
+  brain-move id status      # 1-2 seconds
+  windows-connect           # 10-30 seconds
+  sync-monitor              # 10-15 seconds
+
+MODERATE
+  brain-sync-bidirectional  # 1-2 minutes
+  setup-windows-ssh         # 2-3 minutes
+
+SLOW
+  setup-cron-sync           # 5 minutes
+
+
+📋 COMMON SCENARIOS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+"I have a new idea"
+  ba "idea text"
+
+"What am I working on?"
+  brain-ask "active"
+
+"Show me all gigs"
+  brain-ask "gig"
+
+"What was that project?"
+  brain-ask --deep "project about X"
+
+"I'm done with this"
+  brain-move id_here completed
+
+"Sync everything"
+  windows-connect
+  OR
+  brain-sync-bidirectional
+
+"Is the system healthy?"
+  sync-monitor
+
+"Can I connect to Windows?"
+  windows-status
+
+"I want SSH speed boost"
+  setup-windows-ssh
+  windows-connect
+
+
+🔧 SETUP CHECKLIST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+One-Time (Quick Start):
+  [ ] Read: 00_START_HERE.md
+  [ ] Run: windows-status
+  [ ] Use: ba "test task"
+
+Optional (SSH Speed):
+  [ ] Enable SSH on Windows (Settings → Apps → OpenSSH)
+  [ ] Run: setup-windows-ssh
+  [ ] Run: windows-status (verify ✅)
+  [ ] Use: windows-connect (fast!)
+
+Optional (Full Automation):
+  [ ] Run: setup-cron-sync
+  [ ] Then: Automatic every 6 hours
+
+
+📈 THREE SYNC METHODS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SSH DIRECT (Fastest) 🟢
+  windows-connect
+  Speed: 10-30 seconds
+  Setup: setup-windows-ssh
+  Best: LAN, speed matters
+
+GITHUB (Reliable) 🟡
+  brain-sync-bidirectional
+  Speed: 1-2 minutes
+  Setup: Already working
+  Best: Remote, reliable fallback
+
+LOCAL (Offline) ⚠️
+  ba, brain-ask (no sync)
+  Speed: Instant
+  Setup: Already working
+  Best: Emergency, no connectivity
+
+
+💡 PRO TIPS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Always start with: windows-status (tells you best sync method)
+
+2. Use shortcuts: All commands in ~/bin/ (no path needed)
+
+3. Combine for speed:
+   windows-status && windows-connect
+
+4. Check logs: tail ~/.logs/sync-6h.log
+
+5. Use aliases from .zshrc for common commands
+
+6. windows-connect is smart (tries SSH, falls back to GitHub)
+
+7. sync-monitor shows what needs attention
+
+8. Setup SSH keys for passwordless sync: ssh-keygen -t ed25519
+
+
+⚡ QUICK REFERENCE CARD
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Capture:      ba "text"
+Find:         brain-ask "search"
+Move:         brain-move id status
+Sync (fast):  windows-connect
+Sync (safe):  brain-sync-bidirectional
+Status:       windows-status
+Health:       sync-monitor
+Setup SSH:    setup-windows-ssh
+Setup auto:   setup-cron-sync
+
+
+🎯 DAILY MINIMUM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Morning:
+  windows-status
+
+Work:
+  ba "task"
+  brain-ask "search"
+
+Evening:
+  windows-connect
+
+That's it! Everything else is optional.
+
+
+📚 DOCUMENTATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Quick Start:         00_START_HERE.md
+Master Guide:        COMPLETE_IMPLEMENTATION_GUIDE.md
+Architecture:        WINDOWS_TERMUX_SYNC_DEEP_EVAL.md
+SSH Setup:           DIRECT_CONNECTIVITY_GUIDE.md
+Method Comparison:   SYNC_METHODS_COMPARISON.md
+
+All in: ~/.local/share/second-brain/
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Status: ✅ READY FOR PRODUCTION
+
+You have everything you need. Just start using it.
+
+windows-status  → Check status
+windows-connect → Sync (fastest available)
+ba "task"       → Capture
+brain-ask "x"   → Find
+
+Done.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

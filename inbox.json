@@ -4,11 +4,12 @@
     "text": "finish the gratog landing page by friday",
     "source": "voice",
     "timestamp": "2026-01-19T17:29:35.394Z",
-    "status": "classified",
+    "status": "active",
     "category": "task",
     "priority": "high",
     "nextAction": "Finish the Gratog landing page",
-    "confidence": 0.9
+    "confidence": 0.9,
+    "updatedAt": "2026-01-22T13:11:57.498Z"
   },
   {
     "id": "mklfx5x1",
@@ -44,9 +45,10 @@
     "estimatedMinutes": 180,
     "source": "ai-plan",
     "timestamp": "2026-01-19T20:18:49.805Z",
-    "status": "classified",
+    "status": "active",
     "planGoal": "Launch new website",
-    "planOrder": 1
+    "planOrder": 1,
+    "updatedAt": "2026-01-22T13:12:01.836Z"
   },
   {
     "id": "mkllyjbh2",
@@ -349,8 +351,9 @@
     "priority": "high",
     "source": "nlp",
     "timestamp": "2026-01-21T17:28:36.257Z",
-    "status": "classified",
-    "nextAction": "Build authentication module for gratog"
+    "status": "active",
+    "nextAction": "Build authentication module for gratog",
+    "updatedAt": "2026-01-22T13:12:01.582Z"
   },
   {
     "id": "m7bh92ih",
@@ -359,13 +362,14 @@
     "priority": "high",
     "source": "nlp",
     "timestamp": "2026-01-21T17:28:41.883Z",
-    "status": "classified",
+    "status": "active",
     "nextAction": "Invoice ACME Corp",
     "gigData": {
       "client": "ACME Corp",
       "amount": 2500,
       "description": "website redesign"
-    }
+    },
+    "updatedAt": "2026-01-22T13:12:01.294Z"
   },
   {
     "id": "8582r55k",
@@ -426,5 +430,15 @@
     "timestamp": "2026-01-22T00:42:41Z",
     "status": "classified",
     "nextAction": "h3lp"
+  },
+  {
+    "id": "kfhaezp2",
+    "text": "Call",
+    "category": "task",
+    "priority": "medium",
+    "source": "cli",
+    "timestamp": "2026-01-22T12:47:38Z",
+    "status": "classified",
+    "nextAction": "Call"
   }
 ]
