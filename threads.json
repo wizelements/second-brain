@@ -1,1 +1,27 @@
-[]
+{
+  "handoffs": [
+    {
+      "id": "handoff-termux-001",
+      "from": "termux-amp",
+      "to": "windows-amp",
+      "threadId": "T-019be81c-dc0c-713a-9933-36ee55047356",
+      "task": "Install second-brain-dev skill and configure sync",
+      "context": "Created WINDOWS_AMP_CONTEXT.md with full setup instructions. Windows Amp needs to: 1) Install skill at C:\\Users\\jacla\\.config\\agents\\skills\\second-brain-dev\\SKILL.md, 2) Sync from GitHub, 3) Verify inbox.json access, 4) Report back via threads.json handoff.",
+      "status": "pending",
+      "createdAt": "2026-01-22T17:45:00Z"
+    }
+  ],
+  "sharedContext": {
+    "activeProject": "second-brain",
+    "lastTermuxThread": "T-019be81c-dc0c-713a-9933-36ee55047356",
+    "lastWindowsThread": null,
+    "syncStatus": "termux-ahead",
+    "lastSync": "2026-01-22T17:45:00Z"
+  },
+  "metadata": {
+    "version": "1.0",
+    "createdAt": "2026-01-22T17:45:00Z",
+    "createdBy": "termux-amp",
+    "purpose": "Amp-to-Amp coordination and context sharing"
+  }
+}

@@ -1,7 +1,7 @@
-# WINDOWS G0T CONTROL - Deep Integration & Alignment
+# WINDOWS GPT CONTROL - Deep Integration & Alignment
 **Version**: 1.0.0  
 **Status**: Windows API Online ✓  
-**Purpose**: Bidirectional sync, G0T monitoring, remote control
+**Purpose**: Bidirectional sync, GPT monitoring, remote control
 
 ---
 
@@ -47,10 +47,10 @@ SYNC LOOP:
 
 ## 1. DEPLOY WINDOWS LISTENER (15 MIN)
 
-Save as: `C:\Users\[user]\windows-g0t-control.ps1`
+Save as: `C:\Users\[user]\windows-gpt-control.ps1`
 
 ```powershell
-# WINDOWS G0T CONTROL LISTENER
+# WINDOWS GPT CONTROL LISTENER
 # Runs on Windows, allows Termux to monitor + control
 
 param(
@@ -86,7 +86,7 @@ $listener.Prefixes.Add("http://localhost:$Port/")
 $listener.Start()
 
 Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-Write-Host "✓ Windows G0T Control Listener v1.0.0"
+Write-Host "✓ Windows GPT Control Listener v1.0.0"
 Write-Host "  Port: $Port"
 Write-Host "  Brain: $BrainPath"
 Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
@@ -96,7 +96,7 @@ Write-Host "  GET    /status          - Listener status"
 Write-Host "  GET    /brain/status    - Second Brain status"
 Write-Host "  GET    /brain/inbox     - Inbox items"
 Write-Host "  POST   /brain/sync      - Sync inbox.json"
-Write-Host "  GET    /divergence      - G0T (divergences)"
+Write-Host "  GET    /divergence      - GPT (divergences)"
 Write-Host "  POST   /server/start    - Start GPT Bridge"
 Write-Host "  POST   /server/stop     - Stop GPT Bridge"
 Write-Host "  GET    /server/status   - Server status"
@@ -183,7 +183,7 @@ while ($listener.IsListening) {
             }
         }
         
-        # ========== DIVERGENCE DETECTION (G0T) ==========
+        # ========== DIVERGENCE DETECTION (GPT) ==========
         elseif ($method -eq "GET" -and $path -eq "/divergence") {
             $divergences = @()
             
@@ -210,7 +210,7 @@ while ($listener.IsListening) {
             
             $statusCode = 200
             $body = @{
-                "gap_of_truth" = $divergences
+                "gpt" = $divergences
                 "has_divergence" = ($divergences.Count -gt 0)
                 "timestamp" = (Get-Date).ToUniversalTime().ToString("o")
             } | ConvertTo-Json
@@ -301,12 +301,12 @@ $listener.Stop()
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
 
 # 2. Run listener
-powershell -NoExit -File C:\Users\[user]\windows-g0t-control.ps1
+powershell -NoExit -File C:\Users\[user]\windows-gpt-control.ps1
 
 # 3. Add to Task Scheduler for auto-start
 $trigger = New-ScheduledTaskTrigger -AtStartup
 $action = New-ScheduledTaskAction -Execute "powershell.exe" `
-    -Argument "-NoExit -File C:\Users\[user]\windows-g0t-control.ps1"
+    -Argument "-NoExit -File C:\Users\[user]\windows-gpt-control.ps1"
 Register-ScheduledTask -TaskName "WindowsG0TControl" -Trigger $trigger -Action $action -RunLevel Highest
 ```
 
@@ -314,11 +314,11 @@ Register-ScheduledTask -TaskName "WindowsG0TControl" -Trigger $trigger -Action $
 
 ## 3. TERMUX CONTROL COMMANDS
 
-Create: `~/bin/windows-g0t`
+Create: `~/bin/windows-gpt`
 
 ```bash
 #!/bin/bash
-# Termux G0T Control - Monitor and control Windows
+# Termux GPT Control - Monitor and control Windows
 
 WINDOWS_IP="windows.local"  # Or actual IP: 192.168.x.x
 WINDOWS_PORT="5002"
@@ -326,12 +326,12 @@ ENDPOINT="http://$WINDOWS_IP:$WINDOWS_PORT"
 
 show_usage() {
     cat << EOF
-usage: windows-g0t <command>
+usage: windows-gpt <command>
 
 STATUS & MONITORING:
   status              Show listener status
   brain-status        Show Windows brain status
-  g0t                 Show Gap of Truth (divergences)
+  gpt                 Show Gap of Truth (divergences)
   
 BRAIN CONTROL:
   inbox               Get all items
@@ -365,7 +365,7 @@ case "$1" in
         echo "🔄 Syncing Windows brain from GitHub..."
         curl -s -X POST "$ENDPOINT/brain/sync" | jq .
         ;;
-    g0t)
+    gpt)
         echo "⚠️  Gap of Truth (Divergences):"
         curl -s -X GET "$ENDPOINT/divergence" | jq .
         ;;
@@ -428,17 +428,17 @@ esac
 
 ---
 
-## 4. DIVERGENCE DETECTION (G0T)
+## 4. DIVERGENCE DETECTION (GPT)
 
 ```bash
 #!/bin/bash
-# ~/bin/monitor-g0t
+# ~/bin/monitor-gpt
 # Monitor Gap of Truth between Termux and Windows
 
 WINDOWS_IP="windows.local"
 ENDPOINT="http://$WINDOWS_IP:5002"
 
-echo "🔍 Monitoring G0T (Gap of Truth)..."
+echo "🔍 Monitoring GPT (Gap of Truth)..."
 echo ""
 
 # Get divergences
@@ -481,19 +481,19 @@ fi
 
 ```bash
 #!/bin/bash
-# ~/bin/watch-windows-g0t
+# ~/bin/watch-windows-gpt
 # Real-time monitoring loop
 
 INTERVAL=${1:-30}  # Check every 30 seconds
 
-echo "👁️  Watching Windows G0T (every ${INTERVAL}s)"
+echo "👁️  Watching Windows GPT (every ${INTERVAL}s)"
 echo "Press Ctrl+C to stop"
 echo ""
 
 while true; do
     clear
     echo "═══════════════════════════════════════"
-    echo "WINDOWS G0T STATUS - $(date)"
+    echo "WINDOWS GPT STATUS - $(date)"
     echo "═══════════════════════════════════════"
     echo ""
     
@@ -508,7 +508,7 @@ while true; do
     echo ""
     
     # Check divergences
-    echo "[G0T - Divergences]"
+    echo "[GPT - Divergences]"
     curl -s -X GET "http://windows.local:5002/divergence" | jq . 2>/dev/null || echo "✗ Unreachable"
     echo ""
     
@@ -528,19 +528,19 @@ done
 
 ```powershell
 # 1. Copy script to Windows
-# Download WINDOWS_SERVER_CONTROL.md -> Save to C:\Users\[user]\windows-g0t-control.ps1
+# Download WINDOWS_SERVER_CONTROL.md -> Save to C:\Users\[user]\windows-gpt-control.ps1
 
 # 2. Run as Administrator
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
-powershell -NoExit -File C:\Users\[user]\windows-g0t-control.ps1
+powershell -NoExit -File C:\Users\[user]\windows-gpt-control.ps1
 
 # 3. Verify
-# Should show: ✓ Windows G0T Control Listener v1.0.0
+# Should show: ✓ Windows GPT Control Listener v1.0.0
 
 # 4. Add to startup (optional)
 $trigger = New-ScheduledTaskTrigger -AtStartup
-$action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoExit -File C:\Users\[user]\windows-g0t-control.ps1"
-Register-ScheduledTask -TaskName "WindowsG0TControl" -Trigger $trigger -Action $action -RunLevel Highest
+$action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoExit -File C:\Users\[user]\windows-gpt-control.ps1"
+Register-ScheduledTask -TaskName "WindowsGPTControl" -Trigger $trigger -Action $action -RunLevel Highest
 ```
 
 ---
@@ -549,19 +549,19 @@ Register-ScheduledTask -TaskName "WindowsG0TControl" -Trigger $trigger -Action $
 
 ```bash
 # 1. Copy command file
-chmod +x ~/bin/windows-g0t
+chmod +x ~/bin/windows-gpt
 
 # 2. Test connection
-windows-g0t status
+windows-gpt status
 
 # 3. Check brain
-windows-g0t brain-status
+windows-gpt brain-status
 
-# 4. Monitor G0T
-windows-g0t g0t
+# 4. Monitor GPT
+windows-gpt gpt
 
 # 5. Auto-sync
-windows-g0t full-sync
+windows-gpt full-sync
 ```
 
 ---
@@ -572,26 +572,26 @@ windows-g0t full-sync
 
 ```bash
 # Basic status
-windows-g0t status           # Listener alive?
-windows-g0t brain-status     # How many items?
-windows-g0t g0t              # Any divergences?
+windows-gpt status           # Listener alive?
+windows-gpt brain-status     # How many items?
+windows-gpt gpt              # Any divergences?
 
 # Inbox operations
-windows-g0t inbox            # View all items
-windows-g0t sync             # Pull latest from GitHub
+windows-gpt inbox            # View all items
+windows-gpt sync             # Pull latest from GitHub
 
 # Server control
-windows-g0t server status    # Running?
-windows-g0t server start     # Boot it
-windows-g0t server stop      # Kill it
+windows-gpt server status    # Running?
+windows-gpt server start     # Boot it
+windows-gpt server stop      # Kill it
 
 # Combined
-windows-g0t full-sync        # Sync + start server
-windows-g0t check-all        # Full diagnostic
+windows-gpt full-sync        # Sync + start server
+windows-gpt check-all        # Full diagnostic
 
 # Monitoring
-monitor-g0t                  # Check divergences
-watch-windows-g0t 30         # Real-time watch (30s intervals)
+monitor-gpt                  # Check divergences
+watch-windows-gpt 30         # Real-time watch (30s intervals)
 ```
 
 ---
@@ -610,21 +610,21 @@ Step 1: Termux makes change
        ↓
     GitHub (35 items)
 
-Step 2: Windows monitors G0T
-  windows-g0t g0t   ←────────── Detects divergence (34 vs 35)
+Step 2: Windows monitors GPT
+  windows-gpt gpt   ←────────── Detects divergence (34 vs 35)
   
 Step 3: Windows syncs
-  windows-g0t sync  ←────────── Pulls latest
+  windows-gpt sync  ←────────── Pulls latest
        ↓
-    inbox.json (35 items)
-    
+     inbox.json (35 items)
+     
 Step 4: Start server
-  windows-g0t server start
+  windows-gpt server start
        ↓
-    GPT Bridge running on port 5000
-    
+     GPT Bridge running on port 5000
+     
 Step 5: Verify alignment
-  windows-g0t check-all
+  windows-gpt check-all
        ↓
     ✓ All systems aligned
     ✓ Server running
@@ -640,58 +640,58 @@ Step 5: Verify alignment
 # Check if Windows listener is running
 # Windows: Get-Process | ? Name -like "*powershell*"
 # If not, start it:
-powershell -NoExit -File C:\Users\[user]\windows-g0t-control.ps1
+powershell -NoExit -File C:\Users\[user]\windows-gpt-control.ps1
 ```
 
-### "G0T shows divergences"
+### "GPT shows divergences"
 ```bash
 # Sync Windows from Termux
-windows-g0t sync
+windows-gpt sync
 
 # Verify
-windows-g0t brain-status
+windows-gpt brain-status
 ```
 
 ### "Server won't start"
 ```bash
 # Check process
-windows-g0t server status
+windows-gpt server status
 
 # Kill any existing
 Stop-Process -Name node -Force
 
 # Try again
-windows-g0t server start
+windows-gpt server start
 ```
 
 ### "Items differ"
 ```bash
 # Get counts
-windows-g0t brain-status
+windows-gpt brain-status
 jq '.[].id' ~/.local/share/second-brain/inbox.json | wc -l  # Termux count
 
 # Compare
-windows-g0t inbox | jq '.[] | .id' | wc -l  # Windows count
+windows-gpt inbox | jq '.[] | .id' | wc -l  # Windows count
 
 # If Windows behind, sync
-windows-g0t sync
+windows-gpt sync
 ```
 
 ---
 
 ## DEPLOYMENT CHECKLIST
 
-- [ ] **Windows**: Copy `windows-g0t-control.ps1`
+- [ ] **Windows**: Copy `windows-gpt-control.ps1`
 - [ ] **Windows**: Run as Administrator
 - [ ] **Windows**: Listener shows "✓ listening"
-- [ ] **Termux**: Test `windows-g0t status` (should respond)
-- [ ] **Termux**: Test `windows-g0t brain-status`
-- [ ] **Termux**: Test `windows-g0t g0t` (check divergences)
-- [ ] **Termux**: Test `windows-g0t server start`
+- [ ] **Termux**: Test `windows-gpt status` (should respond)
+- [ ] **Termux**: Test `windows-gpt brain-status`
+- [ ] **Termux**: Test `windows-gpt gpt` (check divergences)
+- [ ] **Termux**: Test `windows-gpt server start`
 - [ ] **Windows**: Verify GPT Bridge started
-- [ ] **Termux**: Test `windows-g0t check-all`
+- [ ] **Termux**: Test `windows-gpt check-all`
 - [ ] **Windows**: Add to Task Scheduler for auto-start
-- [ ] **Both**: Monitor real-time with `watch-windows-g0t`
+- [ ] **Both**: Monitor real-time with `watch-windows-gpt`
 
 ---
 
@@ -699,7 +699,7 @@ windows-g0t sync
 
 **Windows API**: ✓ Online (2026-01-22 03:02Z)  
 **Listener**: ⏳ Ready to deploy  
-**G0T Control**: ⏳ Ready to activate  
+**GPT Control**: ⏳ Ready to activate  
 **Sync**: ⏳ Ready to enable  
 
 **Time to Full Control**: ~20 minutes (Windows setup + Termux config)

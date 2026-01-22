@@ -44,7 +44,7 @@
 - Bidirectional sync mechanism
 - Windows-based brain access
 
-**GAP OF TRUTH (G0T)** - Data inconsistency window:
+**GAP OF TRUTH (GPT)** - Data inconsistency window:
 - Termux: 39 items, fully current
 - Windows: Unknown state (last sync unknown)
 - GitHub: Latest push from Termux

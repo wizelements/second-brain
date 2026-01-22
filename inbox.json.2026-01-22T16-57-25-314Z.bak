@@ -475,10 +475,6 @@
     "text": "Concurrent test {1..20}",
     "source": "test",
     "timestamp": "2026-01-22T16:57:22.561Z",
-    "status": "classified",
-    "category": "task",
-    "priority": "medium",
-    "nextAction": "Conduct concurrent test {1..20}",
-    "confidence": 0.9
+    "status": "pending"
   }
 ]

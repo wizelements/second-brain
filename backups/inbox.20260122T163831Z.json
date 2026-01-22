@@ -440,45 +440,5 @@
     "timestamp": "2026-01-22T12:47:38Z",
     "status": "classified",
     "nextAction": "Call"
-  },
-  {
-    "id": "mkpofz3a",
-    "text": "Smoke test",
-    "source": "smoke",
-    "timestamp": "2026-01-22T16:39:27.334Z",
-    "status": "classified",
-    "category": "task",
-    "priority": "medium",
-    "nextAction": "Perform smoke test",
-    "confidence": 0.9
-  },
-  {
-    "id": "mkpouxkp",
-    "text": "Test task from Phase 2 integration",
-    "source": "test",
-    "timestamp": "2026-01-22T16:51:05.209Z",
-    "status": "pending"
-  },
-  {
-    "id": "mkpp2tyo",
-    "text": "Test atomic write",
-    "source": "test",
-    "timestamp": "2026-01-22T16:57:13.776Z",
-    "status": "classified",
-    "category": "task",
-    "priority": "medium",
-    "nextAction": "Perform atomic write test",
-    "confidence": 0.9
-  },
-  {
-    "id": "mkpp30qp",
-    "text": "Concurrent test {1..20}",
-    "source": "test",
-    "timestamp": "2026-01-22T16:57:22.561Z",
-    "status": "classified",
-    "category": "task",
-    "priority": "medium",
-    "nextAction": "Conduct concurrent test {1..20}",
-    "confidence": 0.9
   }
 ]

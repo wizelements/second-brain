@@ -11,7 +11,7 @@
 **File**: `WINDOWS_TERMUX_SYNC_DEEP_EVAL.md`
 
 - Root cause analysis (Windows API Error 1033)
-- Gap of Truth (G0T) identification
+- Gap of Truth (GPT) identification
 - Sync strategy with architecture diagram
 - 4-phase implementation plan
 - Risk assessment & mitigation
