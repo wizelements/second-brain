@@ -15,7 +15,7 @@
 | **GitHub Brain** | `https://github.com/wizelements/second-brain` | Durable state, notes, captures, logs, canonical config | Source of truth |
 
 ### API Spec
-- **OpenAPI v4.0:** `https://solospace.codewithsolo.com/openapi.yaml`
+- **OpenAPI v4.0:** `https://raw.githubusercontent.com/wizelements/second-brain/master/openapi.yaml`
 - **Auth:** Bearer token (`Authorization: Bearer ${GPT_API_TOKEN}`)
 - **Headers:** `Content-Type: application/json`
 

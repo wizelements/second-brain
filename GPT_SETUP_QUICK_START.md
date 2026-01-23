@@ -46,7 +46,7 @@ In **"Additional context about you"** section, add:
 ```
 GPT_API_TOKEN: [YOUR_BEARER_TOKEN]
 Platforms: Windows (https://windows.codewithsolo.com), Android (https://solospace.codewithsolo.com)
-OpenAPI Spec: https://solospace.codewithsolo.com/openapi.yaml
+OpenAPI Spec: https://raw.githubusercontent.com/wizelements/second-brain/master/openapi.yaml
 GitHub Brain: https://github.com/wizelements/second-brain
 ```
 
