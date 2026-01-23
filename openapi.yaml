@@ -1,35 +1,29 @@
 openapi: 3.1.0
 info:
-  title: DevSolo AI API (Production) + Windows Brain Agent v4.0
-  version: "4.0"
+  title: DevSolo AI API (Production)
+  version: "2.1"
   description: |
-    **DevSolo AI** — Unified control across Termux (Android), Windows (Desktop), and Cloud (GitHub).
+    **DevSolo AI** — Unified developer automation.
     
-    **LIVE ENDPOINTS** — Verified against Termux v2.0 and Windows Brain Agent v4.0
+    **LIVE ENDPOINTS ONLY** — Verified against Termux server.js
     
-    **⚠️ FOR GPT: Use these endpoints for email, capture, device control, windows automation, and brain data.**
+    **⚠️ FOR GPT: Use these endpoints for email, capture, device control, and brain data.**
     
-    Hosts:
-    - **Termux/Android**: https://solospace.codewithsolo.com (Cloudflare Tunnel)
-    - **Windows Desktop**: https://windows.codewithsolo.com (Cloudflare Tunnel)
-    - **GitHub Brain**: Git-based sync and state management
+    Hosted on Termux, exposed via Cloudflare Tunnel at https://solospace.codewithsolo.com
     
     **Core Capabilities:**
-    - ✅ **Android**: Email, Capture, Brain, Device, Daily routines, Sync
-    - ✅ **Windows**: System, Network, Process, Audio, Display, Services, Files, Dev, Remote (65 commands)
-    - ✅ **Email**: Send via Gmail/Outlook SMTP (both platforms)
-    - ✅ **Brain**: Read/write inbox, guides, file sync (GitHub)
-    - ✅ **Device**: Notifications, TTS, clipboard, torch, vibrate, screenshot, power
+    - ✅ Email: Send via Gmail/Outlook SMTP
+    - ✅ Capture: Save learning, insights, notes
+    - ✅ Brain: Read/write inbox, guides, file sync
+    - ✅ Device: Notifications, TTS, clipboard, torch, vibrate, screenshot
+    - ✅ Daily: Nudge and focus management
+    - ✅ Sync: Git pull/push for brain directory
 
 servers:
   - url: https://solospace.codewithsolo.com
-    description: Production - Termux/Android (Cloudflare Tunnel)
-  - url: https://windows.codewithsolo.com
-    description: Production - Windows Desktop (Cloudflare Tunnel)
+    description: Production (Cloudflare Tunnel, Termux)
   - url: http://localhost:5000
-    description: Local - Termux/Android
-  - url: http://localhost:8080
-    description: Local - Windows Desktop
+    description: Local (Termux)
 
 security:
   - bearerAuth: []
@@ -1073,147 +1067,26 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  # ========== WINDOWS BRAIN AGENT v4.0 ==========
-  /status:
-    get:
-      operationId: getWindowsStatus
-      summary: Get Windows agent status (v4.0)
-      tags:
-        - Windows Control
-      responses:
-        "200":
-          description: Agent online with command count
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status: { type: string }
-                  version: { type: string }
-                  commandCount: { type: integer }
-                  docker: { type: boolean }
-
-  /health:
-    get:
-      operationId: getWindowsHealth
-      summary: Quick Windows agent health check
-      tags:
-        - Windows Control
-      responses:
-        "200":
-          description: Agent healthy
-
-  /command:
-    post:
-      operationId: executeWindowsCommand
-      summary: Execute Windows command (System, Network, Process, Dev, File, etc.)
-      description: |
-        **65 commands available** across:
-        - System (8): lock, sleep, restart, shutdown, status
-        - Network (6): WiFi, DNS, IP
-        - Process (5): list, kill, start, suspend, resume
-        - Audio (4): volume, mute
-        - Display (4): resolution, brightness
-        - Services (4): list, start, stop, restart
-        - Files (6): read, list, create, delete, copy, move
-        - Development (7): build, powershell, git operations
-        - Remote (2): SSH, SCP
-        - Plus: Docker, notifications, notes, reminders, email, clipboard, apps, media
-      tags:
-        - Windows Control
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - intent
-              properties:
-                intent:
-                  type: string
-                  description: Command intent (e.g., system.status, process.list, dev.git.push)
-                args:
-                  type: object
-                  description: Command-specific arguments
-      responses:
-        "200":
-          description: Command executed
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status: { type: string, enum: [ok, error, pending] }
-                  result: { type: string }
-                  error: { type: string }
-                  message: { type: string }
-
-  /commands:
-    get:
-      operationId: listWindowsCommands
-      summary: List all 65 Windows commands
-      tags:
-        - Windows Control
-      responses:
-        "200":
-          description: Array of command names
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: string
-                example:
-                  - system.status
-                  - process.list
-                  - network.wifi.on
-                  - dev.git.push
-                  - file.create
-
-  /pending:
-    get:
-      operationId: getWindowsPending
-      summary: Get pending Windows confirmations
-      description: Returns destructive commands awaiting approval (5-min expiry)
-      tags:
-        - Windows Control
-      responses:
-        "200":
-          description: List of pending confirmations
-
-  /results:
-    get:
-      operationId: getWindowsResults
-      summary: Get last 20 Windows command results
-      tags:
-        - Windows Control
-      responses:
-        "200":
-          description: Recent command execution results
-
-  tags:
-     - name: Utility
-       description: Health and info
-     - name: Email
-       description: Email sending (PRIMARY)
-     - name: Smart Command
-       description: Universal router and task completion
-     - name: Capture & Brain
-       description: Save learnings and captures
-     - name: Inbox
-       description: Manage inbox items
-     - name: Daily Routines
-       description: Morning, nudge, evening briefings
-     - name: Freelance
-       description: Gig logging and earnings tracking
-     - name: Guides & Knowledge
-       description: Documentation
-     - name: File Management
-       description: File sync and context
-     - name: Device Control
-       description: Android device actions
-     - name: Windows Control
-       description: "Complete Windows automation: System, Network, Process, Audio, Display, Services, Files, Dev, Remote (65 commands)"
-     - name: Sync
-       description: Git synchronization
+tags:
+  - name: Utility
+    description: Health and info
+  - name: Email
+    description: Email sending (PRIMARY)
+  - name: Smart Command
+    description: Universal router and task completion
+  - name: Capture & Brain
+    description: Save learnings and captures
+  - name: Inbox
+    description: Manage inbox items
+  - name: Daily Routines
+    description: Morning, nudge, evening briefings
+  - name: Freelance
+    description: Gig logging and earnings tracking
+  - name: Guides & Knowledge
+    description: Documentation
+  - name: File Management
+    description: File sync and context
+  - name: Device Control
+    description: Android device actions
+  - name: Sync
+    description: Git synchronization
