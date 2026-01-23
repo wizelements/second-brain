@@ -1399,37 +1399,51 @@ Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Fo
             statusEl.innerHTML = `
                 <div style="color: #fbbf24;">⏳ Starting Agent...</div>
                 <div style="font-size: 0.85rem; color: #d1d5db; margin-top: 0.5rem;">
-                    This will open PowerShell in the background. Please wait 5-10 seconds...
+                    This will launch PowerShell in the background. Please wait...
                 </div>
             `;
             startBtn.disabled = true;
 
-            // Call a local PowerShell script via a simple batch/VBS launcher
-            // In real implementation, this would call a Windows service endpoint
-            
-            // For now, show instructions
+            // Option 1: Click to run the VBS launcher (easiest)
             statusEl.innerHTML = `
-                <div style="color: #fbbf24;">📋 Instructions</div>
-                <div style="font-size: 0.85rem; color: #d1d5db; margin-top: 0.5rem;">
-                    <p>To start the agent, copy this command and run it in PowerShell:</p>
+                <div style="color: #10b981; margin-bottom: 1rem;">
+                    <strong>🎯 Easiest Way (Recommended)</strong>
+                    <p style="font-size: 0.85rem; color: #d1d5db; margin-top: 0.5rem;">
+                        Double-click this file to start the agent automatically:
+                    </p>
+                    <div style="background: #1f2937; padding: 0.75rem; border-radius: 4px; font-family: monospace; font-size: 0.8rem; color: #fbbf24; margin-top: 0.5rem; word-break: break-all; cursor: pointer;" onclick="window.open('C:\\\\Users\\\\jacla\\\\Scripts\\\\Start-Agent-Now.vbs')">
+                        ➜ C:\Users\jacla\Scripts\Start-Agent-Now.vbs
+                    </div>
+                    <p style="font-size: 0.75rem; color: #9ca3af; margin-top: 0.5rem;">
+                        👉 Or open Windows Explorer and navigate to: C:\Users\jacla\Scripts\
+                    </p>
+                </div>
+
+                <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
+                    <strong>📋 Manual Method</strong>
+                    <p style="font-size: 0.85rem; color: #d1d5db; margin-top: 0.5rem;">
+                        Copy and paste this in PowerShell:
+                    </p>
                     <div style="background: #1f2937; padding: 0.75rem; border-radius: 4px; font-family: monospace; font-size: 0.8rem; color: #10b981; margin-top: 0.5rem; word-break: break-all;">
                         Start-Job -FilePath "C:\\Users\\jacla\\Scripts\\windows-brain-agent-v4.ps1" -Name "brain-agent"
                     </div>
-                    <p style="margin-top: 0.75rem;">Then click "Refresh Status" to verify it's running.</p>
                 </div>
+
+                <p style="margin-top: 1rem; font-size: 0.85rem; color: #d1d5db;">
+                    After starting, click <strong>"Refresh Status"</strong> in 5-10 seconds to confirm it's running.
+                </p>
             `;
 
-            // Then check every 2 seconds for 30 seconds
+            // Auto-check every 3 seconds for 30 seconds
             let attempts = 0;
             const interval = setInterval(() => {
                 attempts++;
-                if (attempts > 15) {
+                if (attempts > 10) {
                     clearInterval(interval);
-                    checkAgent();
                     return;
                 }
                 checkAgent();
-            }, 2000);
+            }, 3000);
         }
 
         function stopAgent() {
