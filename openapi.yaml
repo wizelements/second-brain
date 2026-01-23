@@ -921,7 +921,7 @@ paths:
               properties:
                 enabled:
                   type: boolean
-                  default: true
+                  default: "true"
       responses:
         "200":
           description: Torch state changed
