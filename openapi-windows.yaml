@@ -1,0 +1,149 @@
+openapi: 3.1.0
+info:
+  title: Windows Brain Agent API
+  description: Control Windows laptop via Second Brain agent
+  version: "3.1"
+servers:
+  - url: https://windows.codewithsolo.com
+paths:
+  /status:
+    get:
+      operationId: getStatus
+      summary: Get agent status
+      responses:
+        "200":
+          description: Agent status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  version:
+                    type: string
+                  docker:
+                    type: boolean
+                  time:
+                    type: string
+  /command:
+    post:
+      operationId: executeCommand
+      summary: Execute a Windows command
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - intent
+              properties:
+                intent:
+                  type: string
+                  enum:
+                    - system.status
+                    - system.lock
+                    - system.sleep
+                    - system.restart
+                    - system.shutdown
+                    - system.cancel
+                    - notify.toast
+                    - notify.popup
+                    - note.add
+                    - note.list
+                    - reminder.add
+                    - reminder.list
+                    - email.draft
+                    - email.send
+                    - clipboard.get
+                    - clipboard.set
+                    - browser.open
+                    - app.list
+                    - app.close
+                    - file.read
+                    - file.list
+                    - project.list
+                    - sync.pull
+                    - sync.push
+                    - sync.status
+                    - docker.status
+                    - docker.ps
+                    - docker.start
+                    - docker.stop
+                    - server.start
+                    - server.stop
+                    - speak.say
+                    - screen.shot
+                    - sound.play
+                    - confirm.list
+                    - confirm.approve
+                    - confirm.deny
+                args:
+                  type: object
+                  description: Command arguments vary by intent
+      responses:
+        "200":
+          description: Command result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  result:
+                    type: string
+                  error:
+                    type: string
+  /commands:
+    get:
+      operationId: listCommands
+      summary: List all available commands
+      responses:
+        "200":
+          description: List of command names
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /sync:
+    get:
+      operationId: triggerSync
+      summary: Trigger GitHub sync
+      responses:
+        "200":
+          description: Sync result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+  /inbox:
+    get:
+      operationId: getInbox
+      summary: Get brain inbox items
+      responses:
+        "200":
+          description: Inbox contents
+          content:
+            application/json:
+              schema:
+                type: string
+  /pending:
+    get:
+      operationId: getPending
+      summary: Get pending confirmations
+      responses:
+        "200":
+          description: Pending confirmations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object

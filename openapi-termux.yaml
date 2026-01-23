@@ -1,0 +1,371 @@
+openapi: 3.1.0
+info:
+  title: SoloSpace Termux API
+  description: Control Android/Termux device and Second Brain
+  version: "2.0"
+servers:
+  - url: https://solospace.codewithsolo.com
+paths:
+  /health:
+    get:
+      operationId: getHealth
+      summary: Service health check
+      responses:
+        "200":
+          description: Health status
+  /webhook/device/status:
+    get:
+      operationId: getDeviceStatus
+      summary: Get device battery and WiFi status
+      responses:
+        "200":
+          description: Device status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  battery:
+                    type: object
+                  wifi:
+                    type: object
+                  timestamp:
+                    type: string
+  /webhook/notify:
+    post:
+      operationId: sendNotification
+      summary: Send Android notification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - message
+              properties:
+                title:
+                  type: string
+                  default: GPT Notification
+                message:
+                  type: string
+                priority:
+                  type: string
+                  enum: [default, low, high, max]
+      responses:
+        "200":
+          description: Notification sent
+  /webhook/speak:
+    post:
+      operationId: textToSpeech
+      summary: Speak text aloud via TTS
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - text
+              properties:
+                text:
+                  type: string
+                rate:
+                  type: number
+                  default: 1.0
+      responses:
+        "200":
+          description: Speaking
+  /webhook/clipboard/get:
+    get:
+      operationId: getClipboard
+      summary: Get clipboard content
+      responses:
+        "200":
+          description: Clipboard content
+  /webhook/clipboard/set:
+    post:
+      operationId: setClipboard
+      summary: Set clipboard content
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - text
+              properties:
+                text:
+                  type: string
+      responses:
+        "200":
+          description: Clipboard set
+  /webhook/vibrate:
+    post:
+      operationId: vibrate
+      summary: Vibrate device
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                duration:
+                  type: integer
+                  default: 500
+                  description: Duration in milliseconds
+      responses:
+        "200":
+          description: Vibrated
+  /webhook/torch:
+    post:
+      operationId: toggleTorch
+      summary: Toggle flashlight
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                state:
+                  type: string
+                  enum: [on, off, toggle]
+                  default: toggle
+      responses:
+        "200":
+          description: Torch state changed
+  /webhook/screenshot:
+    post:
+      operationId: takeScreenshot
+      summary: Take a screenshot
+      responses:
+        "200":
+          description: Screenshot taken
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  path:
+                    type: string
+  /webhook/app/launch:
+    post:
+      operationId: launchApp
+      summary: Launch an Android app
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                package:
+                  type: string
+                  description: App package name (e.g., com.android.chrome)
+                url:
+                  type: string
+                  description: URL to open (alternative to package)
+      responses:
+        "200":
+          description: App launched
+  /webhook/sync/trigger:
+    post:
+      operationId: triggerSync
+      summary: Trigger git sync on brain directory
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                action:
+                  type: string
+                  enum: [pull, push, both]
+                  default: both
+      responses:
+        "200":
+          description: Sync result
+  /webhook/capture:
+    post:
+      operationId: captureKnowledge
+      summary: Capture a learning or insight
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - type
+                - content
+              properties:
+                type:
+                  type: string
+                  enum: [learning, bug-fix, deployment, pattern, insight, note]
+                content:
+                  type: string
+                project:
+                  type: string
+                  default: general
+                files:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        "200":
+          description: Capture saved
+  /webhook/nudge:
+    get:
+      operationId: getNudge
+      summary: Get current focus/context
+      responses:
+        "200":
+          description: Focus and suggestions
+    post:
+      operationId: setFocus
+      summary: Set current focus
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                focus:
+                  type: string
+                priority:
+                  type: string
+                  enum: [low, normal, high]
+      responses:
+        "200":
+          description: Focus set
+  /webhook/inbox:
+    get:
+      operationId: getInbox
+      summary: Get inbox items
+      responses:
+        "200":
+          description: Inbox items
+    post:
+      operationId: addToInbox
+      summary: Add item to inbox
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - content
+              properties:
+                type:
+                  type: string
+                  default: task
+                content:
+                  type: string
+                project:
+                  type: string
+                due:
+                  type: string
+      responses:
+        "200":
+          description: Item added
+  /webhook/email/gmail:
+    post:
+      operationId: sendEmailGmail
+      summary: Send email via Gmail
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - to
+                - subject
+                - body
+              properties:
+                to:
+                  type: string
+                subject:
+                  type: string
+                body:
+                  type: string
+      responses:
+        "200":
+          description: Email sent
+  /webhook/email/outlook:
+    post:
+      operationId: sendEmailOutlook
+      summary: Send email via Outlook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - to
+                - subject
+                - body
+              properties:
+                to:
+                  type: string
+                subject:
+                  type: string
+                body:
+                  type: string
+      responses:
+        "200":
+          description: Email sent
+  /webhook/send-guide:
+    post:
+      operationId: saveGuide
+      summary: Save a guide/document
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+                - content
+              properties:
+                title:
+                  type: string
+                content:
+                  type: string
+      responses:
+        "200":
+          description: Guide saved
+  /webhook/guides:
+    get:
+      operationId: listGuides
+      summary: List saved guides
+      responses:
+        "200":
+          description: List of guides
+  /webhook/captures:
+    get:
+      operationId: listCaptures
+      summary: List captures with optional filters
+      parameters:
+        - name: project
+          in: query
+          schema:
+            type: string
+        - name: type
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: List of captures
