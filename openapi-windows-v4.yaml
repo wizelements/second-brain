@@ -1,0 +1,258 @@
+openapi: 3.1.0
+info:
+  title: Windows Brain Agent API v4.0
+  description: Complete Windows control via Second Brain - System, Network, Process, File, Dev, and Remote
+  version: "4.0"
+servers:
+  - url: https://windows.codewithsolo.com
+
+paths:
+  /status:
+    get:
+      operationId: getStatus
+      summary: Get agent status and stats
+      responses:
+        "200":
+          description: Agent status with command count
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string }
+                  version: { type: string }
+                  commandCount: { type: integer }
+                  docker: { type: boolean }
+                  time: { type: string }
+
+  /command:
+    post:
+      operationId: executeCommand
+      summary: Execute any Windows command
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - intent
+              properties:
+                intent:
+                  type: string
+                  enum:
+                    # System
+                    - system.status
+                    - system.lock
+                    - system.sleep
+                    - system.restart
+                    - system.shutdown
+                    - system.cancel
+                    # Network
+                    - network.wifi.on
+                    - network.wifi.off
+                    - network.ip.list
+                    - network.dns.get
+                    - network.dns.set
+                    # Process
+                    - process.list
+                    - process.kill
+                    - process.start
+                    - process.suspend
+                    - process.resume
+                    # Audio
+                    - audio.volume.get
+                    - audio.volume.set
+                    - audio.mute
+                    - audio.unmute
+                    # Display
+                    - display.resolution
+                    - display.brightness.set
+                    - display.lock
+                    # Services
+                    - service.list
+                    - service.start
+                    - service.stop
+                    - service.restart
+                    # Files
+                    - file.read
+                    - file.list
+                    - file.create
+                    - file.delete
+                    - file.copy
+                    - file.move
+                    # Development
+                    - dev.build
+                    - dev.powershell
+                    - dev.git.branch
+                    - dev.git.pull
+                    - dev.git.push
+                    # Remote
+                    - remote.ssh
+                    - remote.scp
+                    # Docker
+                    - docker.ps
+                    - docker.start
+                    - docker.stop
+                    - docker.status
+                    # Server
+                    - server.start
+                    - server.stop
+                    # Notifications
+                    - notify.toast
+                    - notify.popup
+                    # Notes & Reminders
+                    - note.add
+                    - note.list
+                    - reminder.add
+                    - reminder.list
+                    # Email & Communication
+                    - email.draft
+                    - email.send
+                    # System Access
+                    - clipboard.get
+                    - clipboard.set
+                    - browser.open
+                    - app.list
+                    - app.close
+                    # Media
+                    - speak.say
+                    - screen.shot
+                    - sound.play
+                    - volume.get
+                    - volume.set
+                    # Projects
+                    - project.list
+                    # Sync
+                    - sync.pull
+                    - sync.push
+                    - sync.status
+                    # Confirmations
+                    - confirm.list
+                    - confirm.approve
+                    - confirm.deny
+                args:
+                  type: object
+                  description: Command-specific arguments
+      responses:
+        "200":
+          description: Command result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, enum: [ok, error, pending] }
+                  result: { type: string }
+                  error: { type: string }
+                  message: { type: string }
+
+  /commands:
+    get:
+      operationId: listCommands
+      summary: List all 65 available commands
+      responses:
+        "200":
+          description: Array of command names
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+
+  /sync:
+    get:
+      operationId: triggerSync
+      summary: Force GitHub sync now
+      responses:
+        "200":
+          description: Sync completed
+
+  /inbox:
+    get:
+      operationId: getInbox
+      summary: Get brain inbox items
+      responses:
+        "200":
+          description: Inbox contents
+
+  /pending:
+    get:
+      operationId: getPending
+      summary: Get pending confirmations
+      responses:
+        "200":
+          description: List of pending confirmations requiring approval/denial
+
+  /results:
+    get:
+      operationId: getResults
+      summary: Get last 20 command results
+      responses:
+        "200":
+          description: Recent command execution results
+
+  /health:
+    get:
+      operationId: health
+      summary: Quick health check
+      responses:
+        "200":
+          description: Agent is running
+
+components:
+  schemas:
+    CommandRequest:
+      type: object
+      required:
+        - intent
+      properties:
+        intent:
+          type: string
+          description: The command to execute
+        args:
+          type: object
+          description: Varies by command
+
+    CommandResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [ok, error, pending]
+        result:
+          type: string
+        error:
+          type: string
+        message:
+          type: string
+        id:
+          type: string
+          description: Confirmation ID if pending
+
+tags:
+  - name: System
+    description: System power, status, display
+  - name: Network
+    description: WiFi, DNS, IP configuration
+  - name: Process
+    description: List, kill, start, suspend processes
+  - name: Audio
+    description: Volume, mute/unmute
+  - name: Display
+    description: Resolution, brightness, lock
+  - name: Services
+    description: Windows service management
+  - name: Files
+    description: Read, create, delete, copy, move (sandboxed)
+  - name: Development
+    description: Build, PowerShell, Git operations
+  - name: Remote
+    description: SSH, SCP
+  - name: Docker
+    description: Container management
+  - name: Server
+    description: Dev server start/stop
+  - name: Other
+    description: Notifications, notes, reminders, email, clipboard, browser, apps, media
