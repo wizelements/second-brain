@@ -844,51 +844,97 @@
 
         // Load data from API or local files
         async function loadData() {
+            let apiAvailable = false;
+            
             try {
-                // Try API first
-                const inboxResp = await fetch(`${API_BASE}/webhook/inbox`);
+                // Try API first (with timeout)
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), 3000);
+                
+                const inboxResp = await fetch(`${API_BASE}/webhook/inbox`, { 
+                    signal: controller.signal,
+                    mode: 'cors'
+                });
+                clearTimeout(timeout);
+                
                 if (inboxResp.ok) {
                     const inbox = await inboxResp.json();
                     brainData.inbox = inbox.items || [];
+                    apiAvailable = true;
+
+                    // Load reminders
+                    const remindersResp = await fetch(`${API_BASE}/webhook/reminders`, { mode: 'cors' });
+                    if (remindersResp.ok) {
+                        const reminders = await remindersResp.json();
+                        brainData.reminders = reminders || [];
+                    }
+
+                    // Load guides
+                    const guidesResp = await fetch(`${API_BASE}/webhook/guides`, { mode: 'cors' });
+                    if (guidesResp.ok) {
+                        const guides = await guidesResp.json();
+                        brainData.guides = guides || [];
+                    }
                 } else {
-                    throw new Error('API unavailable');
+                    throw new Error('API response not ok');
                 }
-
-                // Load reminders
-                const remindersResp = await fetch(`${API_BASE}/webhook/reminders`);
-                if (remindersResp.ok) {
-                    const reminders = await remindersResp.json();
-                    brainData.reminders = reminders || [];
-                }
-
-                // Load guides
-                const guidesResp = await fetch(`${API_BASE}/webhook/guides`);
-                if (guidesResp.ok) {
-                    const guides = await guidesResp.json();
-                    brainData.guides = guides || [];
-                }
-
-                renderUI();
-                updateStatus(true);
             } catch (error) {
-                console.error('Failed to load data:', error);
-                updateStatus(false);
-                // Try fallback to local data
-                loadLocalData();
+                console.log('API unavailable, trying local fallback:', error.message);
+                apiAvailable = false;
+                await loadLocalData();
             }
+            
+            renderUI();
+            updateStatus(apiAvailable);
         }
 
-        // Fallback: Load from local JSON files
+        // Fallback: Load from local JSON files in same directory
         async function loadLocalData() {
             try {
-                const inboxData = await fetch('inbox.json');
-                if (inboxData.ok) {
-                    brainData.inbox = await inboxData.json();
+                // Load inbox from local file
+                const inboxResp = await fetch('inbox.json');
+                if (inboxResp.ok) {
+                    const data = await inboxResp.json();
+                    brainData.inbox = Array.isArray(data) ? data : (data.items || []);
                 }
+                
+                // Try to load reminders
+                try {
+                    const remResp = await fetch('reminders.jsonl');
+                    if (remResp.ok) {
+                        const text = await remResp.text();
+                        const reminders = [];
+                        text.split('\n').forEach(line => {
+                            if (line.trim()) {
+                                try {
+                                    reminders.push(JSON.parse(line));
+                                } catch (e) {}
+                            }
+                        });
+                        brainData.reminders = reminders;
+                    }
+                } catch (e) {}
+                
+                // Try to load notes
+                try {
+                    const notesResp = await fetch('notes.jsonl');
+                    if (notesResp.ok) {
+                        const text = await notesResp.text();
+                        const notes = [];
+                        text.split('\n').forEach(line => {
+                            if (line.trim()) {
+                                try {
+                                    notes.push(JSON.parse(line));
+                                } catch (e) {}
+                            }
+                        });
+                    }
+                } catch (e) {}
+                
+                console.log('Loaded from local files:', brainData.inbox.length, 'inbox items');
             } catch (e) {
-                console.error('Fallback load failed:', e);
+                console.error('Local fallback failed:', e);
             }
-            renderUI();
         }
 
         // Render all UI
@@ -1129,9 +1175,14 @@
 
         function updateStatus(online) {
             const indicator = document.getElementById('statusIndicator');
+            const isLocalFile = window.location.protocol === 'file:';
+            
             if (online) {
                 indicator.className = 'status-indicator online';
                 indicator.innerHTML = '<span class="status-dot"></span><span>Online</span>';
+            } else if (isLocalFile) {
+                indicator.className = 'status-indicator online';
+                indicator.innerHTML = '<span class="status-dot"></span><span>Local Mode</span>';
             } else {
                 indicator.className = 'status-indicator offline';
                 indicator.innerHTML = '<span class="status-dot"></span><span>Offline</span>';
