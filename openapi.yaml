@@ -393,7 +393,122 @@ paths:
         "404":
           description: Item not found
 
+  # ========== SMART ROUTER ==========
+  /webhook/smart:
+    post:
+      operationId: smartCommand
+      summary: Universal command router
+      description: |
+        Intelligently routes natural language to appropriate endpoint.
+        GPT uses this for requests that need intelligent routing.
+      tags:
+        - Smart Command
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - text
+              properties:
+                text:
+                  type: string
+                  example: "email john about the project"
+      responses:
+        "200":
+          description: Routed to endpoint
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  route:
+                    type: string
+
+  /webhook/done:
+    post:
+      operationId: markDone
+      summary: Mark task as complete
+      description: |
+        Fuzzy matches task description and marks as done.
+        Searches inbox for similar content.
+      tags:
+        - Smart Command
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - text
+              properties:
+                text:
+                  type: string
+                  example: "Fix login bug"
+      responses:
+        "200":
+          description: Task marked done
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  id:
+                    type: string
+
   # ========== DAILY ROUTINES ==========
+  /webhook/morning:
+    get:
+      operationId: morningBriefing
+      summary: Get morning briefing
+      description: Today's tasks, priorities, and focus
+      tags:
+        - Daily Routines
+      responses:
+        "200":
+          description: Morning briefing
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  stats:
+                    type: object
+
+  /webhook/evening:
+    get:
+      operationId: eveningReview
+      summary: Get evening recap
+      description: Today's wins, completed tasks, tomorrow's plan
+      tags:
+        - Daily Routines
+      responses:
+        "200":
+          description: Evening summary
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  stats:
+                    type: object
+
   /webhook/nudge:
     get:
       operationId: getNudge
@@ -441,6 +556,74 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SuccessResponse"
+
+  # ========== FREELANCE TRACKING ==========
+  /webhook/log-gig:
+    post:
+      operationId: logGig
+      summary: Log freelance gig
+      description: |
+        Record freelance work.
+        Format: "Client Name - $Amount - Description"
+      tags:
+        - Freelance
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - text
+              properties:
+                text:
+                  type: string
+                  example: "ACME Corp - $1500 - Build landing page"
+      responses:
+        "200":
+          description: Gig logged
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  id:
+                    type: string
+                  gig:
+                    type: object
+
+  /webhook/earnings:
+    get:
+      operationId: getEarnings
+      summary: Get earnings summary
+      description: Total earnings by period
+      tags:
+        - Freelance
+      parameters:
+        - name: period
+          in: query
+          schema:
+            type: string
+            enum: [month, week, all-time]
+            default: "month"
+      responses:
+        "200":
+          description: Earnings report
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  stats:
+                    type: object
 
   # ========== GUIDES & DOCUMENTS ==========
   /webhook/send-guide:
@@ -889,12 +1072,16 @@ tags:
     description: Health and info
   - name: Email
     description: Email sending (PRIMARY)
+  - name: Smart Command
+    description: Universal router and task completion
   - name: Capture & Brain
     description: Save learnings and captures
   - name: Inbox
     description: Manage inbox items
   - name: Daily Routines
-    description: Focus and nudges
+    description: Morning, nudge, evening briefings
+  - name: Freelance
+    description: Gig logging and earnings tracking
   - name: Guides & Knowledge
     description: Documentation
   - name: File Management
