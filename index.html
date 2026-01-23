@@ -1381,48 +1381,57 @@ Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Fo
         }
 
         async function checkAgent() {
-            const statusEl = document.getElementById('agentStatus');
-            const startBtn = document.getElementById('startBtn');
-            const stopBtn = document.getElementById('stopBtn');
-            
-            statusEl.innerHTML = '<div class="loading" style="display: inline-block;"></div> Checking...';
+             const statusEl = document.getElementById('agentStatus');
+             const startBtn = document.getElementById('startBtn');
+             const stopBtn = document.getElementById('stopBtn');
+             
+             statusEl.innerHTML = '<div class="loading" style="display: inline-block;"></div> Checking...';
 
-            try {
-                const response = await fetch('https://windows.codewithsolo.com/status', {
-                    method: 'GET',
-                    mode: 'cors'
-                });
+             try {
+                 const controller = new AbortController();
+                 const timeoutId = setTimeout(() => controller.abort(), 5000);
+                 
+                 const response = await fetch('http://localhost:8080/status', {
+                     method: 'GET',
+                     headers: { 'Content-Type': 'application/json' }
+                 });
+                 clearTimeout(timeoutId);
 
-                if (response.ok) {
-                    const data = await response.json();
-                    statusEl.innerHTML = `
-                        <div style="color: #86efac;">✅ Agent Running</div>
-                        <div style="font-size: 0.85rem; color: #d1d5db; margin-top: 0.5rem;">
-                            Status: Online<br>
-                            Version: ${data.version || 'v4.0'}<br>
-                            Uptime: ${data.uptime || 'N/A'}
-                        </div>
-                    `;
-                    startBtn.style.display = 'none';
-                    stopBtn.style.display = 'block';
-                    updateStatus(true);
-                    document.getElementById('statusText').textContent = 'Online';
-                } else {
-                    throw new Error('Not responding');
-                }
-            } catch (error) {
-                statusEl.innerHTML = `
-                    <div style="color: #fca5a5;">⚠️ Agent Not Running</div>
-                    <div style="font-size: 0.85rem; color: #d1d5db; margin-top: 0.5rem;">
-                        The Windows Brain Agent is offline. Click "Start Agent" to begin.
-                    </div>
-                `;
-                startBtn.style.display = 'block';
-                stopBtn.style.display = 'none';
-                updateStatus(false);
-                document.getElementById('statusText').textContent = 'Offline';
-            }
-        }
+                 if (response.ok) {
+                     const data = await response.json();
+                     statusEl.innerHTML = `
+                         <div style="color: #86efac; font-size: 1.1rem; font-weight: 600; margin-bottom: 0.75rem;">✅ Agent Running</div>
+                         <div style="font-size: 0.85rem; color: #d1d5db; line-height: 1.8;">
+                             <strong>Status:</strong> Online<br>
+                             <strong>Version:</strong> ${data.version || 'lite'}<br>
+                             <strong>CPU:</strong> ${data.cpu ? data.cpu.toFixed(1) : 'N/A'}%<br>
+                             <strong>Memory:</strong> ${data.memory || 'N/A'}<br>
+                             <strong>Uptime:</strong> ${data.uptime || 'N/A'}
+                         </div>
+                     `;
+                     startBtn.style.display = 'none';
+                     stopBtn.style.display = 'inline-block';
+                     updateStatus(true);
+                     document.getElementById('statusText').textContent = 'Online';
+                 } else {
+                     throw new Error('HTTP ' + response.status);
+                 }
+             } catch (error) {
+                 statusEl.innerHTML = `
+                     <div style="color: #fca5a5; font-size: 1.1rem; font-weight: 600; margin-bottom: 0.75rem;">⚠️ Agent Not Running</div>
+                     <div style="font-size: 0.85rem; color: #d1d5db;">
+                         The Windows Brain Agent is offline. Click "Start Agent" or run in PowerShell:<br>
+                         <div style="background: #1f2937; padding: 0.5rem; border-radius: 4px; font-family: monospace; font-size: 0.75rem; color: #10b981; margin-top: 0.5rem;">
+                             powershell -File C:\\Users\\jacla\\Scripts\\windows-brain-agent-lite.ps1
+                         </div>
+                     </div>
+                 `;
+                 startBtn.style.display = 'inline-block';
+                 stopBtn.style.display = 'none';
+                 updateStatus(false);
+                 document.getElementById('statusText').textContent = 'Offline';
+             }
+         }
 
         function startAgent() {
             const statusEl = document.getElementById('agentStatus');
