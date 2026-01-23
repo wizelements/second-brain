@@ -1,0 +1,108 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                   WINDOWS BRAIN AGENT AUTO-START CHEATSHEET                 ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+WHAT: Set up agent to start automatically when you boot Windows
+WHY: Agent will be available immediately for Termux commands
+HOW: Pick one option below and run it on Windows
+
+─────────────────────────────────────────────────────────────────────────────
+OPTION A: PowerShell Script (Simplest)
+─────────────────────────────────────────────────────────────────────────────
+
+1. Open File Explorer
+2. Go to: C:\Users\jacla\Scripts\
+3. RIGHT-CLICK: Setup-Autostart.ps1
+4. Click: "Run with PowerShell"
+5. Click "Yes" on security prompt
+6. Done! ✓
+
+─────────────────────────────────────────────────────────────────────────────
+OPTION B: Batch File
+─────────────────────────────────────────────────────────────────────────────
+
+1. Open File Explorer
+2. Go to: C:\Users\jacla\Scripts\
+3. DOUBLE-CLICK: Register-Brain-Autostart.bat
+4. Click "Yes" on security prompt
+5. Command window appears
+6. Press any key to close
+7. Done! ✓
+
+─────────────────────────────────────────────────────────────────────────────
+OPTION C: PowerShell Command (Manual)
+─────────────────────────────────────────────────────────────────────────────
+
+1. Open PowerShell as Administrator
+   - Press Windows + R
+   - Type: powershell
+   - Press Ctrl+Shift+Enter
+   - Click "Yes"
+
+2. Copy & paste this entire command:
+
+   $taskName = "Windows Brain Agent"; $scriptPath = "C:\Users\jacla\Scripts\windows-brain-agent-v4.ps1"; $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -WindowStyle Hidden -File `"$scriptPath`""; $trigger = New-ScheduledTaskTrigger -AtStartup; Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Force; Write-Host "✓ Auto-start enabled!" -ForegroundColor Green
+
+3. Press Enter
+4. Done! ✓
+
+─────────────────────────────────────────────────────────────────────────────
+AFTER: What to Do Next
+─────────────────────────────────────────────────────────────────────────────
+
+1. Restart your computer: Restart-Computer -Force
+2. Agent starts automatically after login
+3. Open Brain UI: file:///C:/Users/jacla/.local/share/second-brain/index.html
+4. Check status indicator (top-left) - should be 🟢 GREEN "Online"
+
+─────────────────────────────────────────────────────────────────────────────
+VERIFY: Task Was Created Successfully
+─────────────────────────────────────────────────────────────────────────────
+
+Run in PowerShell:
+
+  Get-ScheduledTask -TaskName "Windows Brain Agent"
+
+Should show:
+  TaskName              State
+  --------              -----
+  Windows Brain Agent   Enabled
+
+─────────────────────────────────────────────────────────────────────────────
+TROUBLESHOOTING
+─────────────────────────────────────────────────────────────────────────────
+
+Q: I got "Access Denied"
+A: Make sure you clicked "Yes" on the UAC (security) prompt
+
+Q: "The term 'Register-ScheduledTask' is not recognized"
+A: Use Option B (Batch file) instead
+
+Q: Agent still shows "Offline" after reboot
+A: Check agent logs:
+   Get-Content "C:\Users\jacla\.local\share\second-brain\agent.log" -Tail 20
+
+Q: How do I undo this?
+A: In PowerShell (Admin):
+   Unregister-ScheduledTask -TaskName "Windows Brain Agent" -Confirm:$false
+
+─────────────────────────────────────────────────────────────────────────────
+REFERENCE
+─────────────────────────────────────────────────────────────────────────────
+
+Script files:
+  C:\Users\jacla\Scripts\Setup-Autostart.ps1
+  C:\Users\jacla\Scripts\Register-Brain-Autostart.bat
+  C:\Users\jacla\Scripts\Verify-Brain-Autostart.ps1
+
+Documentation:
+  AUTOSTART_FINAL_SETUP.md
+  AUTOSTART_SETUP_GUIDE.md
+  AUTOSTART_QUICK_START.md
+
+Brain UI: C:\Users\jacla\.local\share\second-brain\index.html
+Agent: C:\Users\jacla\Scripts\windows-brain-agent-v4.ps1
+
+═════════════════════════════════════════════════════════════════════════════
+Created: January 23, 2026
+═════════════════════════════════════════════════════════════════════════════

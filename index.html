@@ -989,6 +989,38 @@ Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Fo
                     }
                 } catch (e) {}
                 
+                // Add built-in guides (always available)
+                brainData.guides = [
+                    {
+                        id: 'autostart-final',
+                        title: '🚀 Auto-Start Setup (START HERE)',
+                        created: new Date().toISOString(),
+                        size: '5 min read',
+                        content: `# Auto-Start Setup - FINAL INSTRUCTIONS\n\n**You need to run ONE of these options on Windows:**\n\n**Option A: Right-Click PowerShell Script**\n1. Open File Explorer → C:\\Users\\jacla\\Scripts\\\n2. Right-click Setup-Autostart.ps1\n3. Select "Run with PowerShell"\n4. Click "Yes" on UAC prompt\n\n**Option B: Batch File**\n1. Open File Explorer → C:\\Users\\jacla\\Scripts\\\n2. Double-click Register-Brain-Autostart.bat\n3. Click "Yes" on UAC prompt\n\n**Option C: Manual PowerShell**\n1. Open PowerShell as Admin (Ctrl+Shift+Enter)\n2. Run the command shown in AUTOSTART_FINAL_SETUP.md\n\n**Then:** Restart computer → Agent starts automatically!\n\n[Full Instructions](AUTOSTART_FINAL_SETUP.md)`
+                    },
+                    {
+                        id: 'autostart-quickstart',
+                        title: '⚡ Quick Auto-Start Guide',
+                        created: new Date().toISOString(),
+                        size: '2 min read',
+                        content: `# Windows Brain Agent Auto-Start\n\n**3 Steps to Auto-Start Agent on Boot:**\n\n1. Open File Explorer → C:\\Users\\jacla\\Scripts\\\n2. Run one of these: Setup-Autostart.ps1 or Register-Brain-Autostart.bat\n3. Click "Yes" on UAC prompt → Restart computer\n\nAgent will start automatically! Check status indicator (should be 🟢 Green "Online").\n\n[Full Guide](AUTOSTART_SETUP_GUIDE.md)`
+                    },
+                    {
+                        id: 'agent-status',
+                        title: '🔍 Agent Status & Troubleshooting',
+                        created: new Date().toISOString(),
+                        size: '3 min read',
+                        content: `# Windows Brain Agent Status\n\n**Current Status:** Check the status indicator at top-left:\n- 🟢 Green "Online" = Agent running + tunnel available\n- 🟡 Yellow "Local Mode" = Agent running, no tunnel  \n- 🔴 Red "Offline" = Agent not running\n\n**If Offline:**\n1. Check if agent process is running\n2. Verify port 8080 is not in use\n3. Check agent logs for errors\n4. Manually start with: C:\\Users\\jacla\\Scripts\\windows-brain-agent-v4.ps1\n\n[Full Guide](WINDOWS_AGENT_STATUS.md)`
+                    },
+                    {
+                        id: 'agent-controls',
+                        title: '🎮 Agent Control Panel',
+                        created: new Date().toISOString(),
+                        size: '2 min read',
+                        content: `# Agent Control Panel\n\n**Access:** Click the status indicator (top-left) to open controls.\n\n**Available Actions:**\n- **Start Agent**: Starts the background service (local only)\n- **Stop Agent**: Stops the running process\n- **Restart Agent**: Restarts the service\n- **Refresh Status**: Checks if agent is running now\n\n**Note:** Browser can't directly launch programs for security. To start agent:\n1. Use one-click launcher: Start-Agent-Now.vbs\n2. Or set up auto-start (see guide above)\n3. Or run manually: powershell -File C:\\Users\\jacla\\Scripts\\windows-brain-agent-v4.ps1\n\n[Full Guide](AGENT_CONTROLS_GUIDE.md)`
+                    }
+                ];
+                
                 console.log('Loaded from local files:', brainData.inbox.length, 'inbox items');
             } catch (e) {
                 console.error('Local fallback failed:', e);
