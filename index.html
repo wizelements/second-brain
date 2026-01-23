@@ -670,11 +670,14 @@
             <div class="tagline">Your unified command center</div>
         </header>
 
-        <!-- Status Indicator -->
+        <!-- Status Indicator with Controls -->
         <div style="text-align: center; margin: 1rem 0;">
-            <div class="status-indicator online" id="statusIndicator">
+            <div class="status-indicator online" id="statusIndicator" style="cursor: pointer; display: inline-flex;" onclick="openAgentControls()">
                 <span class="status-dot"></span>
-                <span>Online</span>
+                <span id="statusText">Online</span>
+            </div>
+            <div style="font-size: 0.75rem; color: #9ca3af; margin-top: 0.5rem;">
+                Click for agent controls
             </div>
         </div>
 
@@ -813,6 +816,61 @@
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeModal()">Close</button>
                 <button class="btn btn-primary" id="modalAction" onclick="modalActionClick()" style="display: none;">Take Action</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Agent Control Modal -->
+    <div class="modal" id="agentModal">
+        <div class="modal-content">
+            <div class="modal-header">⚙️ Windows Brain Agent Control</div>
+            <div class="modal-body">
+                <div style="background: rgba(99, 102, 241, 0.1); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                    <div style="font-weight: 600; margin-bottom: 0.5rem;">Agent Status</div>
+                    <div id="agentStatus" style="font-size: 0.95rem; color: #e5e7eb;">
+                        Checking...
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <div style="font-weight: 600; margin-bottom: 0.75rem;">Quick Actions</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                        <button class="btn btn-primary" id="startBtn" onclick="startAgent()" style="width: 100%;">▶️ Start Agent</button>
+                        <button class="btn btn-secondary" id="stopBtn" onclick="stopAgent()" style="width: 100%; display: none;">⏹️ Stop Agent</button>
+                        <button class="btn btn-primary" onclick="checkAgent()" style="width: 100%;">🔍 Refresh Status</button>
+                        <button class="btn btn-secondary" onclick="restartAgent()" style="width: 100%;">🔄 Restart Agent</button>
+                    </div>
+                </div>
+
+                <div style="background: rgba(55, 65, 81, 0.5); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                    <div style="font-weight: 600; margin-bottom: 0.75rem; color: #e5e7eb;">ℹ️ Information</div>
+                    <div style="font-size: 0.85rem; color: #d1d5db; line-height: 1.6;">
+                        <p><strong>What's the agent?</strong></p>
+                        <p>The Windows Brain Agent is a background service that listens for commands from Termux and executes them on Windows. It runs on port 8080.</p>
+                        
+                        <p style="margin-top: 1rem;"><strong>Why start it?</strong></p>
+                        <p>✓ Termux can send commands to Windows<br>
+                           ✓ Remote file operations work<br>
+                           ✓ Cross-device automation enabled</p>
+                        
+                        <p style="margin-top: 1rem;"><strong>How long to start?</strong></p>
+                        <p>Usually 5-10 seconds. You'll see "Agent Running" here when ready.</p>
+                    </div>
+                </div>
+
+                <div style="background: rgba(239, 68, 68, 0.1); padding: 1rem; border-radius: 8px;">
+                    <div style="font-weight: 600; margin-bottom: 0.5rem; color: #fca5a5;">Make It Auto-Start</div>
+                    <p style="font-size: 0.85rem; color: #d1d5db; margin-bottom: 0.75rem;">Run this in PowerShell as Admin to auto-start on Windows boot:</p>
+                    <div style="background: #1f2937; padding: 0.75rem; border-radius: 4px; font-family: monospace; font-size: 0.8rem; color: #10b981; overflow-x: auto;">
+$taskName = "Windows Brain Agent"<br>
+$action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument '-NoProfile -WindowStyle Hidden -File "C:\Users\jacla\Scripts\windows-brain-agent-v4.ps1"'<br>
+$trigger = New-ScheduledTaskTrigger -AtStartup<br>
+Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Force
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeAgentModal()">Close</button>
             </div>
         </div>
     </div>
@@ -1276,6 +1334,135 @@
 
         function openSettings() {
             alert('Settings not yet available');
+        }
+
+        // ===== AGENT CONTROLS =====
+        
+        async function openAgentControls() {
+            const modal = document.getElementById('agentModal');
+            modal.classList.add('active');
+            await checkAgent();
+        }
+
+        function closeAgentModal() {
+            document.getElementById('agentModal').classList.remove('active');
+        }
+
+        async function checkAgent() {
+            const statusEl = document.getElementById('agentStatus');
+            const startBtn = document.getElementById('startBtn');
+            const stopBtn = document.getElementById('stopBtn');
+            
+            statusEl.innerHTML = '<div class="loading" style="display: inline-block;"></div> Checking...';
+
+            try {
+                const response = await fetch('https://windows.codewithsolo.com/status', {
+                    method: 'GET',
+                    mode: 'cors'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    statusEl.innerHTML = `
+                        <div style="color: #86efac;">✅ Agent Running</div>
+                        <div style="font-size: 0.85rem; color: #d1d5db; margin-top: 0.5rem;">
+                            Status: Online<br>
+                            Version: ${data.version || 'v4.0'}<br>
+                            Uptime: ${data.uptime || 'N/A'}
+                        </div>
+                    `;
+                    startBtn.style.display = 'none';
+                    stopBtn.style.display = 'block';
+                    updateStatus(true);
+                    document.getElementById('statusText').textContent = 'Online';
+                } else {
+                    throw new Error('Not responding');
+                }
+            } catch (error) {
+                statusEl.innerHTML = `
+                    <div style="color: #fca5a5;">⚠️ Agent Not Running</div>
+                    <div style="font-size: 0.85rem; color: #d1d5db; margin-top: 0.5rem;">
+                        The Windows Brain Agent is offline. Click "Start Agent" to begin.
+                    </div>
+                `;
+                startBtn.style.display = 'block';
+                stopBtn.style.display = 'none';
+                updateStatus(false);
+                document.getElementById('statusText').textContent = 'Offline';
+            }
+        }
+
+        function startAgent() {
+            const statusEl = document.getElementById('agentStatus');
+            const startBtn = document.getElementById('startBtn');
+            
+            statusEl.innerHTML = `
+                <div style="color: #fbbf24;">⏳ Starting Agent...</div>
+                <div style="font-size: 0.85rem; color: #d1d5db; margin-top: 0.5rem;">
+                    This will open PowerShell in the background. Please wait 5-10 seconds...
+                </div>
+            `;
+            startBtn.disabled = true;
+
+            // Call a local PowerShell script via a simple batch/VBS launcher
+            // In real implementation, this would call a Windows service endpoint
+            
+            // For now, show instructions
+            statusEl.innerHTML = `
+                <div style="color: #fbbf24;">📋 Instructions</div>
+                <div style="font-size: 0.85rem; color: #d1d5db; margin-top: 0.5rem;">
+                    <p>To start the agent, copy this command and run it in PowerShell:</p>
+                    <div style="background: #1f2937; padding: 0.75rem; border-radius: 4px; font-family: monospace; font-size: 0.8rem; color: #10b981; margin-top: 0.5rem; word-break: break-all;">
+                        Start-Job -FilePath "C:\\Users\\jacla\\Scripts\\windows-brain-agent-v4.ps1" -Name "brain-agent"
+                    </div>
+                    <p style="margin-top: 0.75rem;">Then click "Refresh Status" to verify it's running.</p>
+                </div>
+            `;
+
+            // Then check every 2 seconds for 30 seconds
+            let attempts = 0;
+            const interval = setInterval(() => {
+                attempts++;
+                if (attempts > 15) {
+                    clearInterval(interval);
+                    checkAgent();
+                    return;
+                }
+                checkAgent();
+            }, 2000);
+        }
+
+        function stopAgent() {
+            if (confirm('Stop the Windows Brain Agent? Termux commands will be blocked.')) {
+                const statusEl = document.getElementById('agentStatus');
+                statusEl.innerHTML = `
+                    <div style="color: #fca5a5;">📋 To stop the agent:</div>
+                    <div style="font-size: 0.85rem; color: #d1d5db; margin-top: 0.5rem;">
+                        <p>Run this in PowerShell:</p>
+                        <div style="background: #1f2937; padding: 0.75rem; border-radius: 4px; font-family: monospace; font-size: 0.8rem; color: #10b981; margin-top: 0.5rem; word-break: break-all;">
+                            Stop-Job -Name "brain-agent"
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function restartAgent() {
+            if (confirm('Restart the Windows Brain Agent?')) {
+                const statusEl = document.getElementById('agentStatus');
+                statusEl.innerHTML = `
+                    <div style="color: #fbbf24;">⏳ Restarting...</div>
+                    <div style="font-size: 0.85rem; color: #d1d5db; margin-top: 0.5rem;">
+                        <p>Run these commands in PowerShell:</p>
+                        <div style="background: #1f2937; padding: 0.75rem; border-radius: 4px; font-family: monospace; font-size: 0.8rem; color: #10b981; margin-top: 0.5rem; word-break: break-all;">
+                            Stop-Job -Name "brain-agent"<br>
+                            Start-Sleep -Seconds 2<br>
+                            Start-Job -FilePath "C:\\Users\\jacla\\Scripts\\windows-brain-agent-v4.ps1" -Name "brain-agent"
+                        </div>
+                        <p style="margin-top: 0.75rem;">Then click "Refresh Status" when done.</p>
+                    </div>
+                `;
+            }
         }
     </script>
 </body>
