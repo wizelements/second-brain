@@ -1,0 +1,7 @@
+{
+  "action": "RUN_ON_WINDOWS",
+  "description": "Execute this PowerShell on Windows to list Desktop files",
+  "command": "powershell -Command \"$d = if(Test-Path $env:USERPROFILE\\OneDrive\\Desktop){$env:USERPROFILE+'\\OneDrive\\Desktop'}else{[Environment]::GetFolderPath('Desktop')}; Get-ChildItem $d | Select Name,Length,LastWriteTime | ConvertTo-Json | Out-File $env:USERPROFILE\\.local\\share\\second-brain\\desktop-files.json -Encoding UTF8\"",
+  "outputFile": ".local/share/second-brain/desktop-files.json",
+  "timestamp": "2026-01-23T04:50:00Z"
+}
