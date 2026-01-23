@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Second Brain Inbox</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --dark: #1f2937;
+            --darker: #111827;
+            --light: #f3f4f6;
+            --lighter: #e5e7eb;
+            --text: #374151;
+            --text-light: #6b7280;
+            --bg: #ffffff;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+            color: var(--text);
+        }
+
+        /* Widget Container */
+        .widget {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background: var(--darker);
+            color: white;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
+        }
+
+        /* Header */
+        .widget-header {
+            padding: 1rem;
+            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            flex-shrink: 0;
+        }
+
+        .widget-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .widget-subtitle {
+            font-size: 0.75rem;
+            color: #9ca3af;
+        }
+
+        /* Content Area */
+        .widget-content {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            padding: 0.5rem;
+        }
+
+        /* Inbox List */
+        .inbox-item {
+            padding: 1rem;
+            background: rgba(255,255,255,0.05);
+            border-left: 3px solid var(--primary);
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            active-color: rgba(99, 102, 241, 0.2);
+        }
+
+        .inbox-item:active {
+            background: rgba(99, 102, 241, 0.2);
+        }
+
+        .inbox-item.gig {
+            border-left-color: var(--secondary);
+        }
+
+        .inbox-item.reminder {
+            border-left-color: var(--warning);
+        }
+
+        .inbox-item.guide {
+            border-left-color: #ec4899;
+        }
+
+        .inbox-item-text {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: white;
+            word-break: break-word;
+        }
+
+        .inbox-item-meta {
+            display: flex;
+            gap: 0.75rem;
+            font-size: 0.75rem;
+            color: #9ca3af;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .badge.high {
+            background: rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+        }
+
+        .badge.medium {
+            background: rgba(245, 158, 11, 0.3);
+            color: #fcd34d;
+        }
+
+        .badge.low {
+            background: rgba(99, 102, 241, 0.3);
+            color: #c7d2fe;
+        }
+
+        .badge.task {
+            background: rgba(59, 130, 246, 0.3);
+            color: #93c5fd;
+        }
+
+        .badge.gig {
+            background: rgba(16, 185, 129, 0.3);
+            color: #86efac;
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+            padding: 0.5rem;
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .stat {
+            text-align: center;
+            padding: 0.75rem;
+            border-radius: 4px;
+            background: rgba(255,255,255,0.05);
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 0.65rem;
+            color: #9ca3af;
+            margin-top: 0.25rem;
+            text-transform: uppercase;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+            padding: 0.5rem;
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .action-btn {
+            padding: 0.75rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .action-btn:active {
+            opacity: 0.8;
+            transform: scale(0.98);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 2rem 1rem;
+            color: #9ca3af;
+        }
+
+        .empty-state-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state-text {
+            font-weight: 600;
+        }
+
+        /* Footer */
+        .widget-footer {
+            padding: 0.75rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            font-size: 0.7rem;
+            color: #6b7280;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        /* Priority Indicator */
+        .priority-dot {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+
+        .priority-dot.high {
+            background-color: var(--danger);
+        }
+
+        .priority-dot.medium {
+            background-color: var(--warning);
+        }
+
+        .priority-dot.low {
+            background-color: var(--primary);
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 2rem 1rem;
+            color: #9ca3af;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(99, 102, 241, 0.2);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Scrollbar styling */
+        .widget-content::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .widget-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .widget-content::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+        }
+
+        .widget-content::-webkit-scrollbar-thumb:active {
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* Responsive */
+        @media (max-height: 400px) {
+            .widget-header {
+                padding: 0.75rem;
+            }
+            .widget-title {
+                font-size: 1rem;
+            }
+            .inbox-item {
+                padding: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="widget">
+        <!-- Header -->
+        <div class="widget-header">
+            <div class="widget-title">🧠 Brain</div>
+            <div class="widget-subtitle">Tap to open full interface</div>
+        </div>
+
+        <!-- Content -->
+        <div class="widget-content">
+            <!-- Stats -->
+            <div class="stats-bar">
+                <div class="stat">
+                    <div class="stat-value" id="activeTasks">0</div>
+                    <div class="stat-label">Active</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="gigs">0</div>
+                    <div class="stat-label">Gigs</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="total">0</div>
+                    <div class="stat-label">Total</div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <button class="action-btn" onclick="quickAction('capture')">📝 Capture</button>
+                <button class="action-btn" onclick="quickAction('email')">✉️ Email</button>
+                <button class="action-btn" onclick="quickAction('sync')">🔄 Sync</button>
+                <button class="action-btn" onclick="quickAction('focus')">🎯 Focus</button>
+            </div>
+
+            <!-- Inbox List -->
+            <div id="inboxList">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <div style="margin-top: 1rem;">Loading...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="widget-footer">
+            <div id="lastSync">Last sync: never</div>
+            <div style="margin-top: 0.25rem; cursor: pointer; color: var(--primary);" onclick="openFull()">📖 Open Full App</div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://solospace.codewithsolo.com';
+        const FULL_APP_URL = 'https://solospace.codewithsolo.com/index.html';
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData();
+            // Auto-refresh every 30 seconds
+            setInterval(loadData, 30000);
+            // Tap header to refresh
+            document.querySelector('.widget-header').addEventListener('click', loadData);
+        });
+
+        // Load data
+        async function loadData() {
+            try {
+                const response = await fetch(`${API_BASE}/webhook/inbox`);
+                if (!response.ok) throw new Error('API unavailable');
+
+                const data = await response.json();
+                const inbox = data.items || data || [];
+
+                renderInbox(inbox);
+                updateStats(inbox);
+                updateLastSync();
+            } catch (error) {
+                console.error('Load failed:', error);
+                document.getElementById('inboxList').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">⚠️</div>
+                        <div class="empty-state-text">Connection failed</div>
+                        <div style="font-size: 0.7rem; margin-top: 0.5rem; color: #6b7280;">Tap header to retry</div>
+                    </div>
+                `;
+            }
+        }
+
+        // Render inbox
+        function renderInbox(inbox) {
+            const list = document.getElementById('inboxList');
+
+            if (inbox.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">✨</div>
+                        <div class="empty-state-text">All caught up!</div>
+                    </div>
+                `;
+                return;
+            }
+
+            // Sort by priority and status
+            const sorted = [...inbox].sort((a, b) => {
+                const priorityOrder = { high: 0, medium: 1, low: 2 };
+                const statusOrder = { active: 0, classified: 1, done: 2 };
+                if (statusOrder[a.status] !== statusOrder[b.status]) {
+                    return statusOrder[a.status] - statusOrder[b.status];
+                }
+                return (priorityOrder[a.priority] || 2) - (priorityOrder[b.priority] || 2);
+            });
+
+            list.innerHTML = sorted.slice(0, 20).map(item => `
+                <div class="inbox-item ${item.category}" onclick="openItem(${JSON.stringify(item).replace(/"/g, '&quot;')})">
+                    <div class="inbox-item-text">
+                        <span class="priority-dot ${item.priority || 'medium'}"></span>
+                        ${escapeHtml(item.text.substring(0, 80))}${item.text.length > 80 ? '...' : ''}
+                    </div>
+                    <div class="inbox-item-meta">
+                        <span class="badge ${item.priority || 'medium'}">${item.priority || 'M'}</span>
+                        <span class="badge ${item.category}">${item.category}</span>
+                        <span>${formatTime(item.timestamp)}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Update stats
+        function updateStats(inbox) {
+            const activeTasks = inbox.filter(i => i.status === 'active' && i.category === 'task').length;
+            const gigs = inbox.filter(i => i.category === 'gig').length;
+
+            document.getElementById('activeTasks').textContent = activeTasks;
+            document.getElementById('gigs').textContent = gigs;
+            document.getElementById('total').textContent = inbox.length;
+        }
+
+        // Quick actions
+        function quickAction(action) {
+            switch(action) {
+                case 'capture':
+                    alert('Capture: Hold power button and say your note');
+                    break;
+                case 'email':
+                    alert('Email: Voice interface coming soon');
+                    break;
+                case 'sync':
+                    loadData();
+                    break;
+                case 'focus':
+                    alert('Set focus: Ask GPT to set your daily focus');
+                    break;
+            }
+        }
+
+        // Open full app
+        function openFull() {
+            if (typeof window.android !== 'undefined') {
+                // Termux WebView
+                window.android.openUrl(FULL_APP_URL);
+            } else {
+                // Fallback
+                window.open(FULL_APP_URL, '_blank');
+            }
+        }
+
+        // Open item (would open in full app)
+        function openItem(item) {
+            alert(item.text.substring(0, 100));
+        }
+
+        // Utilities
+        function updateLastSync() {
+            const now = new Date();
+            const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('lastSync').textContent = `Last sync: ${time}`;
+        }
+
+        function formatTime(timestamp) {
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMins / 60);
+
+            if (diffMins < 1) return 'now';
+            if (diffMins < 60) return `${diffMins}m`;
+            if (diffHours < 24) return `${diffHours}h`;
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Second Brain - Start Here</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --dark: #1f2937;
+            --darker: #111827;
+            --light: #f3f4f6;
+            --lighter: #e5e7eb;
+            --text: #374151;
+            --text-light: #6b7280;
+            --bg: #ffffff;
+            --shadow: 0 4px 6px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Container & Layout */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        /* Header */
+        header {
+            padding: 2rem 0;
+            text-align: center;
+            color: white;
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .tagline {
+            font-size: 1rem;
+            color: #d1d5db;
+            font-weight: 300;
+        }
+
+        /* Main Grid */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        /* Card Styles */
+        .card {
+            background: var(--bg);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            border: 1px solid #f0f0f0;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--lighter);
+        }
+
+        .card-icon {
+            font-size: 2rem;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .card-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-top: 0.25rem;
+        }
+
+        /* Inbox Section */
+        .inbox-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .inbox-item {
+            padding: 1rem;
+            border-left: 4px solid var(--primary);
+            background: var(--light);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .inbox-item:hover {
+            background: #e5e7eb;
+            transform: translateX(4px);
+        }
+
+        .inbox-item.active {
+            border-left-color: var(--primary);
+            background: linear-gradient(135deg, #eef2ff 0%, #f0fdf4 100%);
+        }
+
+        .inbox-item.gig {
+            border-left-color: var(--secondary);
+        }
+
+        .inbox-item.reminder {
+            border-left-color: var(--warning);
+        }
+
+        .inbox-item-text {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: var(--dark);
+            word-break: break-word;
+        }
+
+        .inbox-item-meta {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.75rem;
+            color: var(--text-light);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge.task {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .badge.gig {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge.reminder {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        .badge.guide {
+            background: #fce7f3;
+            color: #be185d;
+        }
+
+        .badge.high {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge.medium {
+            background: #fef3c7;
+            color: #78350f;
+        }
+
+        .badge.low {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        /* Stats */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat {
+            background: var(--light);
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .action-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            padding: 1rem;
+            border: 2px solid var(--lighter);
+            background: var(--bg);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+
+        .action-btn:hover {
+            border-color: var(--primary);
+            background: #f0f4ff;
+            transform: translateY(-2px);
+        }
+
+        .action-btn.primary {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .action-btn.primary:hover {
+            background: var(--primary-dark);
+            border-color: var(--primary-dark);
+        }
+
+        /* Reminders Section */
+        .reminders-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .reminder-item {
+            padding: 1rem;
+            background: var(--light);
+            border-radius: 8px;
+            border-left: 4px solid var(--warning);
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+        }
+
+        .reminder-text {
+            flex: 1;
+        }
+
+        .reminder-time {
+            font-size: 0.875rem;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        /* Guides Section */
+        .guides-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .guide-card {
+            padding: 1.5rem;
+            background: var(--light);
+            border-radius: 8px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .guide-card:hover {
+            border-color: var(--primary);
+            background: #f0f4ff;
+            transform: translateY(-2px);
+        }
+
+        .guide-title {
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--dark);
+        }
+
+        .guide-meta {
+            font-size: 0.75rem;
+            color: var(--text-light);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: var(--bg);
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--dark);
+        }
+
+        .modal-body {
+            color: var(--text);
+            margin-bottom: 1.5rem;
+            line-height: 1.8;
+            word-break: break-word;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: var(--lighter);
+            color: var(--dark);
+        }
+
+        .btn-secondary:hover {
+            background: #d1d5db;
+        }
+
+        /* Loading State */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid var(--lighter);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 3rem 0 1rem;
+            color: #9ca3af;
+            font-size: 0.875rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            margin-top: 3rem;
+        }
+
+        .footer-link {
+            color: var(--primary);
+            text-decoration: none;
+            margin: 0 0.5rem;
+        }
+
+        .footer-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .guides-list {
+                grid-template-columns: 1fr;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .quick-actions {
+                grid-template-columns: 1fr;
+            }
+
+            .logo {
+                font-size: 1.75rem;
+            }
+
+            header {
+                padding: 1.5rem 0;
+            }
+
+            .modal-content {
+                width: 95%;
+                padding: 1.5rem;
+            }
+
+            .card {
+                padding: 1.5rem;
+            }
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-light);
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .empty-state-text {
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .empty-state-hint {
+            font-size: 0.875rem;
+        }
+
+        /* Priority Indicator */
+        .priority-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+
+        .priority-dot.high {
+            background-color: var(--danger);
+        }
+
+        .priority-dot.medium {
+            background-color: var(--warning);
+        }
+
+        .priority-dot.low {
+            background-color: var(--primary);
+        }
+
+        /* Timestamp */
+        .timestamp {
+            font-size: 0.75rem;
+            color: var(--text-light);
+        }
+
+        /* Command Input */
+        .command-section {
+            background: linear-gradient(135deg, #eef2ff 0%, #f0fdf4 100%);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .command-label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .command-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--lighter);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .command-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .command-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .cmd-btn {
+            flex: 1;
+            padding: 0.75rem;
+            border: 2px solid var(--primary);
+            background: white;
+            color: var(--primary);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .cmd-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .cmd-btn.danger {
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        .cmd-btn.danger:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        /* Status Indicator */
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .status-indicator.online {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-indicator.offline {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .status-indicator.online .status-dot {
+            background-color: var(--secondary);
+        }
+
+        .status-indicator.offline .status-dot {
+            background-color: var(--danger);
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div class="logo">🧠 Second Brain</div>
+            <div class="tagline">Your unified command center</div>
+        </header>
+
+        <!-- Status Indicator -->
+        <div style="text-align: center; margin: 1rem 0;">
+            <div class="status-indicator online" id="statusIndicator">
+                <span class="status-dot"></span>
+                <span>Online</span>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-grid">
+            <!-- Left Column: Inbox & Reminders -->
+            <div>
+                <!-- Inbox Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon">📥</div>
+                        <div>
+                            <div class="card-title">Inbox</div>
+                            <div class="card-subtitle" id="inboxCount">0 items</div>
+                        </div>
+                    </div>
+
+                    <div class="stats">
+                        <div class="stat">
+                            <div class="stat-value" id="activeTasks">0</div>
+                            <div class="stat-label">Active</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value" id="gigs">0</div>
+                            <div class="stat-label">Gigs</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value" id="highPriority">0</div>
+                            <div class="stat-label">High</div>
+                        </div>
+                    </div>
+
+                    <div class="inbox-list" id="inboxList">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📭</div>
+                            <div class="empty-state-text">Loading inbox...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reminders Card -->
+                <div class="card" style="margin-top: 2rem;">
+                    <div class="card-header">
+                        <div class="card-icon">⏰</div>
+                        <div>
+                            <div class="card-title">Reminders</div>
+                            <div class="card-subtitle" id="reminderCount">0 upcoming</div>
+                        </div>
+                    </div>
+
+                    <div class="reminders-list" id="remindersList">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">✨</div>
+                            <div class="empty-state-text">No reminders set</div>
+                            <div class="empty-state-hint">Set one to get started</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Quick Actions & Guides -->
+            <div>
+                <!-- Command Center Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon">⚡</div>
+                        <div>
+                            <div class="card-title">Quick Actions</div>
+                            <div class="card-subtitle">Execute commands instantly</div>
+                        </div>
+                    </div>
+
+                    <div class="quick-actions">
+                        <button class="action-btn primary" onclick="quickAction('capture')">
+                            <span>📝</span>
+                            <span>Capture</span>
+                        </button>
+                        <button class="action-btn primary" onclick="quickAction('email')">
+                            <span>✉️</span>
+                            <span>Email</span>
+                        </button>
+                        <button class="action-btn" onclick="quickAction('sync')">
+                            <span>🔄</span>
+                            <span>Sync Brain</span>
+                        </button>
+                        <button class="action-btn" onclick="quickAction('focus')">
+                            <span>🎯</span>
+                            <span>Set Focus</span>
+                        </button>
+                    </div>
+
+                    <!-- Command Input -->
+                    <div class="command-section">
+                        <label class="command-label">💬 Ask brain anything:</label>
+                        <input 
+                            type="text" 
+                            class="command-input" 
+                            id="commandInput"
+                            placeholder="e.g., 'remind me tomorrow at 9am' or 'search my notes'"
+                            onkeypress="if(event.key==='Enter') executeCommand()"
+                        >
+                        <div class="command-buttons">
+                            <button class="cmd-btn" onclick="executeCommand()">Execute</button>
+                            <button class="cmd-btn danger" onclick="clearCommand()">Clear</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Guides Card -->
+                <div class="card" style="margin-top: 2rem;">
+                    <div class="card-header">
+                        <div class="card-icon">📚</div>
+                        <div>
+                            <div class="card-title">Guides</div>
+                            <div class="card-subtitle" id="guideCount">0 available</div>
+                        </div>
+                    </div>
+
+                    <div class="guides-list" id="guidesList">
+                        <div class="empty-state" style="grid-column: 1 / -1;">
+                            <div class="empty-state-icon">📖</div>
+                            <div class="empty-state-text">No guides yet</div>
+                            <div class="empty-state-hint">Guides appear as you add them</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Details -->
+    <div class="modal" id="detailsModal">
+        <div class="modal-content">
+            <div class="modal-header" id="modalTitle">Item Details</div>
+            <div class="modal-body" id="modalBody"></div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Close</button>
+                <button class="btn btn-primary" id="modalAction" onclick="modalActionClick()" style="display: none;">Take Action</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>
+            <a href="#" class="footer-link" onclick="refreshData(); return false;">🔄 Refresh</a>
+            <a href="#" class="footer-link" onclick="openSettings(); return false;">⚙️ Settings</a>
+            <a href="https://solospace.codewithsolo.com" class="footer-link" target="_blank">🌐 API</a>
+        </p>
+        <p style="margin-top: 1rem; font-size: 0.75rem;">v2.0 • Last sync: <span id="lastSync">never</span></p>
+    </footer>
+
+    <script>
+        const API_BASE = 'https://solospace.codewithsolo.com';
+        const BRAIN_DIR = '/.local/share/second-brain';
+        let currentItem = null;
+        let brainData = {
+            inbox: [],
+            reminders: [],
+            guides: []
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData();
+            setInterval(refreshData, 30000); // Auto-refresh every 30 seconds
+        });
+
+        // Load data from API or local files
+        async function loadData() {
+            try {
+                // Try API first
+                const inboxResp = await fetch(`${API_BASE}/webhook/inbox`);
+                if (inboxResp.ok) {
+                    const inbox = await inboxResp.json();
+                    brainData.inbox = inbox.items || [];
+                } else {
+                    throw new Error('API unavailable');
+                }
+
+                // Load reminders
+                const remindersResp = await fetch(`${API_BASE}/webhook/reminders`);
+                if (remindersResp.ok) {
+                    const reminders = await remindersResp.json();
+                    brainData.reminders = reminders || [];
+                }
+
+                // Load guides
+                const guidesResp = await fetch(`${API_BASE}/webhook/guides`);
+                if (guidesResp.ok) {
+                    const guides = await guidesResp.json();
+                    brainData.guides = guides || [];
+                }
+
+                renderUI();
+                updateStatus(true);
+            } catch (error) {
+                console.error('Failed to load data:', error);
+                updateStatus(false);
+                // Try fallback to local data
+                loadLocalData();
+            }
+        }
+
+        // Fallback: Load from local JSON files
+        async function loadLocalData() {
+            try {
+                const inboxData = await fetch('inbox.json');
+                if (inboxData.ok) {
+                    brainData.inbox = await inboxData.json();
+                }
+            } catch (e) {
+                console.error('Fallback load failed:', e);
+            }
+            renderUI();
+        }
+
+        // Render all UI
+        function renderUI() {
+            renderInbox();
+            renderReminders();
+            renderGuides();
+            updateLastSync();
+        }
+
+        // Render Inbox
+        function renderInbox() {
+            const list = document.getElementById('inboxList');
+            const count = document.getElementById('inboxCount');
+            const activeTasksEl = document.getElementById('activeTasks');
+            const gigsEl = document.getElementById('gigs');
+            const highPriorityEl = document.getElementById('highPriority');
+
+            const inbox = brainData.inbox;
+            count.textContent = `${inbox.length} items`;
+
+            // Calculate stats
+            const activeTasks = inbox.filter(i => i.status === 'active' && i.category === 'task').length;
+            const gigs = inbox.filter(i => i.category === 'gig').length;
+            const highPriority = inbox.filter(i => i.priority === 'high').length;
+
+            activeTasksEl.textContent = activeTasks;
+            gigsEl.textContent = gigs;
+            highPriorityEl.textContent = highPriority;
+
+            if (inbox.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">✅</div>
+                        <div class="empty-state-text">All caught up!</div>
+                        <div class="empty-state-hint">Your inbox is empty</div>
+                    </div>
+                `;
+                return;
+            }
+
+            // Sort by priority and status
+            const sortedInbox = [...inbox].sort((a, b) => {
+                const priorityOrder = { high: 0, medium: 1, low: 2 };
+                const statusOrder = { active: 0, classified: 1, done: 2 };
+                
+                if (statusOrder[a.status] !== statusOrder[b.status]) {
+                    return statusOrder[a.status] - statusOrder[b.status];
+                }
+                return (priorityOrder[a.priority] || 2) - (priorityOrder[b.priority] || 2);
+            });
+
+            list.innerHTML = sortedInbox.map(item => `
+                <div class="inbox-item ${item.category}" onclick="viewItem(${JSON.stringify(item).replace(/"/g, '&quot;')})">
+                    <div class="inbox-item-text">
+                        <span class="priority-dot ${item.priority || 'medium'}"></span>
+                        ${escapeHtml(item.text.substring(0, 100))}${item.text.length > 100 ? '...' : ''}
+                    </div>
+                    <div class="inbox-item-meta">
+                        <span class="badge ${item.category}">${item.category}</span>
+                        <span class="badge ${item.priority}">${item.priority || 'medium'}</span>
+                        <span class="timestamp">${formatTime(item.timestamp)}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render Reminders
+        function renderReminders() {
+            const list = document.getElementById('remindersList');
+            const count = document.getElementById('reminderCount');
+
+            const reminders = brainData.reminders;
+            count.textContent = `${reminders.length} upcoming`;
+
+            if (reminders.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">✨</div>
+                        <div class="empty-state-text">No reminders set</div>
+                        <div class="empty-state-hint">Set one to get started</div>
+                    </div>
+                `;
+                return;
+            }
+
+            list.innerHTML = reminders.map(reminder => `
+                <div class="reminder-item">
+                    <div class="reminder-text">
+                        <strong>${escapeHtml(reminder.text)}</strong>
+                        <div class="reminder-time">${formatReminder(reminder.at)}</div>
+                    </div>
+                    <button class="action-btn" style="padding: 0.5rem 1rem; font-size: 0.85rem;" onclick="markReminder('${reminder.id}')">✓</button>
+                </div>
+            `).join('');
+        }
+
+        // Render Guides
+        function renderGuides() {
+            const list = document.getElementById('guidesList');
+            const count = document.getElementById('guideCount');
+
+            const guides = brainData.guides;
+            count.textContent = `${guides.length} available`;
+
+            if (guides.length === 0) {
+                list.innerHTML = `<div class="empty-state" style="grid-column: 1 / -1;">
+                    <div class="empty-state-icon">📖</div>
+                    <div class="empty-state-text">No guides yet</div>
+                    <div class="empty-state-hint">Guides appear as you add them</div>
+                </div>`;
+                return;
+            }
+
+            list.innerHTML = guides.map(guide => `
+                <div class="guide-card" onclick="viewGuide('${guide.id}')">
+                    <div class="guide-title">${escapeHtml(guide.title)}</div>
+                    <div class="guide-meta">📄 ${guide.size || 'N/A'} • ${formatTime(guide.created)}</div>
+                </div>
+            `).join('');
+        }
+
+        // View item details
+        function viewItem(item) {
+            currentItem = item;
+            const modal = document.getElementById('detailsModal');
+            const title = document.getElementById('modalTitle');
+            const body = document.getElementById('modalBody');
+            const action = document.getElementById('modalAction');
+
+            title.textContent = `${item.category.toUpperCase()}: ${item.text.substring(0, 50)}`;
+            
+            let html = `
+                <p><strong>Category:</strong> ${item.category}</p>
+                <p><strong>Priority:</strong> ${item.priority}</p>
+                <p><strong>Status:</strong> ${item.status}</p>
+                <p><strong>Created:</strong> ${formatTime(item.timestamp)}</p>
+                <hr style="margin: 1rem 0; border: none; border-top: 1px solid #e5e7eb;">
+                <p>${escapeHtml(item.text)}</p>
+            `;
+
+            if (item.nextAction) {
+                html += `<p><strong>Next Action:</strong> ${escapeHtml(item.nextAction)}</p>`;
+            }
+
+            if (item.gigData) {
+                html += `
+                    <p><strong>Client:</strong> ${item.gigData.client}</p>
+                    <p><strong>Amount:</strong> $${item.gigData.amount}</p>
+                `;
+                action.textContent = 'Invoice Client';
+                action.style.display = 'block';
+            } else if (item.category === 'task') {
+                action.textContent = 'Mark Complete';
+                action.style.display = 'block';
+            } else {
+                action.style.display = 'none';
+            }
+
+            body.innerHTML = html;
+            modal.classList.add('active');
+        }
+
+        // View guide details
+        async function viewGuide(guideId) {
+            const guide = brainData.guides.find(g => g.id === guideId);
+            if (!guide) return;
+
+            const modal = document.getElementById('detailsModal');
+            const title = document.getElementById('modalTitle');
+            const body = document.getElementById('modalBody');
+            const action = document.getElementById('modalAction');
+
+            title.textContent = guide.title;
+            body.innerHTML = `<div class="loading" style="display: block; margin: 2rem auto;"></div>`;
+            action.style.display = 'none';
+
+            try {
+                const response = await fetch(`${API_BASE}/webhook/guide/${guideId}`);
+                const content = await response.text();
+                body.innerHTML = `<div style="white-space: pre-wrap; word-break: break-word;">${escapeHtml(content)}</div>`;
+            } catch (error) {
+                body.innerHTML = `<p style="color: #ef4444;">Failed to load guide: ${error.message}</p>`;
+            }
+
+            modal.classList.add('active');
+        }
+
+        // Quick actions
+        function quickAction(action) {
+            switch(action) {
+                case 'capture':
+                    openCaptureModal();
+                    break;
+                case 'email':
+                    openEmailModal();
+                    break;
+                case 'sync':
+                    syncBrain();
+                    break;
+                case 'focus':
+                    openFocusModal();
+                    break;
+            }
+        }
+
+        // Execute command
+        async function executeCommand() {
+            const input = document.getElementById('commandInput');
+            const command = input.value.trim();
+
+            if (!command) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/webhook/command`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ command, source: 'ui' })
+                });
+
+                const result = await response.json();
+                alert('Command executed: ' + result.message);
+                input.value = '';
+                loadData();
+            } catch (error) {
+                alert('Failed to execute command: ' + error.message);
+            }
+        }
+
+        // Utility functions
+        function closeModal() {
+            document.getElementById('detailsModal').classList.remove('active');
+        }
+
+        function refreshData() {
+            loadData();
+        }
+
+        function updateStatus(online) {
+            const indicator = document.getElementById('statusIndicator');
+            if (online) {
+                indicator.className = 'status-indicator online';
+                indicator.innerHTML = '<span class="status-dot"></span><span>Online</span>';
+            } else {
+                indicator.className = 'status-indicator offline';
+                indicator.innerHTML = '<span class="status-dot"></span><span>Offline</span>';
+            }
+        }
+
+        function updateLastSync() {
+            const now = new Date();
+            document.getElementById('lastSync').textContent = now.toLocaleTimeString();
+        }
+
+        function formatTime(timestamp) {
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMins / 60);
+            const diffDays = Math.floor(diffHours / 24);
+
+            if (diffMins < 1) return 'just now';
+            if (diffMins < 60) return `${diffMins}m ago`;
+            if (diffHours < 24) return `${diffHours}h ago`;
+            if (diffDays < 7) return `${diffDays}d ago`;
+            return date.toLocaleDateString();
+        }
+
+        function formatReminder(timestamp) {
+            const date = new Date(timestamp);
+            return date.toLocaleDateString() + ' at ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function clearCommand() {
+            document.getElementById('commandInput').value = '';
+        }
+
+        function modalActionClick() {
+            if (!currentItem) return;
+            
+            if (currentItem.gigData) {
+                alert('Invoice action would be sent to email service');
+            } else if (currentItem.category === 'task') {
+                alert('Task marked as complete');
+            }
+            closeModal();
+            loadData();
+        }
+
+        // Placeholder functions for modals
+        function openCaptureModal() {
+            alert('Open capture modal - not yet implemented');
+        }
+
+        function openEmailModal() {
+            alert('Open email modal - not yet implemented');
+        }
+
+        async function syncBrain() {
+            const btn = event.target;
+            btn.disabled = true;
+            btn.textContent = '⏳ Syncing...';
+            
+            try {
+                const response = await fetch(`${API_BASE}/webhook/sync`, {
+                    method: 'POST'
+                });
+                const result = await response.json();
+                alert('Brain synced: ' + result.message);
+                loadData();
+            } catch (error) {
+                alert('Sync failed: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🔄 Sync Brain';
+            }
+        }
+
+        function openFocusModal() {
+            alert('Open focus modal - not yet implemented');
+        }
+
+        function markReminder(id) {
+            alert('Reminder marked - not yet implemented');
+            loadData();
+        }
+
+        function openSettings() {
+            alert('Settings not yet available');
+        }
+    </script>
+</body>
+</html>
