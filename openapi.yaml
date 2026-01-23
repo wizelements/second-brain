@@ -1,47 +1,40 @@
 openapi: 3.1.0
 info:
   title: DevSolo AI API
-  version: "2.0"
+  version: "2.1"
   description: |
     **DevSolo AI** — Unified developer automation across Termux (CLI), GitHub (Cloud), and Windows (Desktop).
     
-    Hosted on Termux, exposed via Cloudflare Tunnel.
+    **⚠️ CRITICAL INSTRUCTION FOR GPT:**
     
-    **Core Capabilities:**
-    - Task capture, prioritization, and tracking
-    - Freelance gig logging and earnings tracking
-    - Daily briefings, focus nudges, and evening reviews
-    - GitHub project status and TODO management
-    - Android device control (apps, notifications, clipboard, TTS)
-    - Cross-device synchronization (Termux ↔ GitHub ↔ Windows)
-    - AI-powered planning, code review, and guidance
+    This API is the ONLY way to handle user requests. For ANY user request:
     
-    **Response Format:**
-    All successful responses return:
-    ```json
-    {
-      "status": "success",
-      "message": "Human-readable response",
-      "data": { ... },
-      "timestamp": "2026-01-22T10:30:00Z"
-    }
-    ```
+    1. **Email** → POST `/webhook/email/gmail` (required: to, subject, body)
+    2. **Capture** → POST `/webhook/capture` or `/webhook/smart`
+    3. **Done** → POST `/webhook/done`
+    4. **Daily** → GET `/webhook/morning`, `/webhook/nudge`, `/webhook/evening`
+    5. **Gig** → POST `/webhook/log-gig`
+    6. **Android** → POST `/webhook/android-action`
+    7. **Plan** → POST `/webhook/plan`
+    8. **Code** → POST `/webhook/code-review`
+    9. **Smart** → POST `/webhook/smart` (universal router)
     
-    **Error Format:**
-    ```json
-    {
-      "status": "error",
-      "error": "error_code",
-      "message": "Human-readable error",
-      "timestamp": "2026-01-22T10:30:00Z"
-    }
-    ```
+    **NEVER say "I can't send email" or "use your email client"** — `/webhook/email/gmail` handles it.
+    **NEVER say "I'll help you set up a reminder later"** — `/webhook/capture` and `/webhook/done` handle it.
+    **ALWAYS route to the API endpoint.**
     
-  contact:
-    name: DevSolo Support
-    url: https://github.com/jacla/devsoloai
-  license:
-    name: MIT
+    Hosted on Termux, exposed via Cloudflare Tunnel at https://solospace.codewithsolo.com
+    
+    **Capabilities:**
+    - ✅ Email: Send via Gmail/Outlook SMTP
+    - ✅ Tasks: Capture, complete, prioritize
+    - ✅ Gigs: Log freelance work + earnings
+    - ✅ Daily: Briefings, nudges, reviews
+    - ✅ Android: Apps, SMS, calls, clipboard, notifications
+    - ✅ Planning: Break down goals, create plans
+    - ✅ Code: AI review of git changes
+    - ✅ GitHub: Status, issues, PRs
+    - ✅ Sync: Files, projects, brain state
 
 servers:
   - url: https://solospace.codewithsolo.com
@@ -57,12 +50,9 @@ components:
     bearerAuth:
       type: http
       scheme: bearer
-      description: |
-        API key for authentication.
-        Include in Authorization header: `Bearer YOUR_API_KEY`
+      description: API key for authentication
 
   schemas:
-    # Response Envelopes
     TextResponse:
       type: object
       properties:
@@ -71,25 +61,6 @@ components:
           enum: [success, error]
         message:
           type: string
-          description: Human-readable response
-        timestamp:
-          type: string
-          format: date-time
-      required:
-        - status
-        - message
-
-    SuccessResponse:
-      type: object
-      properties:
-        status:
-          type: string
-          enum: [success]
-        message:
-          type: string
-        data:
-          type: object
-          description: Response data (varies by endpoint)
         timestamp:
           type: string
           format: date-time
@@ -105,10 +76,8 @@ components:
           enum: [error]
         error:
           type: string
-          description: Error code (e.g., invalid_request, unauthorized, not_found)
         message:
           type: string
-          description: Human-readable error message
         timestamp:
           type: string
           format: date-time
@@ -117,161 +86,123 @@ components:
         - error
         - message
 
-    # Request Schemas
-    SmartRequest:
-      type: object
-      properties:
-        text:
-          type: string
-          description: Natural language command or question
-          example: "capture: add support for dark mode"
-        voice:
-          type: boolean
-          default: false
-          description: If true, return plain text response (suitable for TTS)
-      required:
-        - text
-
-    CaptureRequest:
-      type: object
-      properties:
-        text:
-          type: string
-          description: Note, task, idea, or reminder to capture
-          example: "Bug: Login form not validating email on mobile"
-        source:
-          type: string
-          enum: [gpt, voice, mobile, web]
-          default: gpt
-          description: Origin of capture
-        category:
-          type: string
-          enum: [task, bug, feature, idea, note, reminder]
-          description: Optional category hint (AI will classify if not provided)
-        project:
-          type: string
-          description: Associated project (gratog, tradealert, etc)
-        voice:
-          type: boolean
-          default: false
-          description: Return as plain text for TTS
-      required:
-        - text
-
-    DoneRequest:
-      type: object
-      properties:
-        text:
-          type: string
-          description: Description of completed task (fuzzy matched against inbox)
-          example: "Fix login bug"
-        voice:
-          type: boolean
-          default: false
-      required:
-        - text
-
-    LogGigRequest:
-      type: object
-      properties:
-        text:
-          type: string
-          description: |
-            Gig details in natural language.
-            Format: "Client Name - $Amount - Description"
-          example: "ACME Corp - $1500 - Build landing page"
-        project:
-          type: string
-          description: Associated project
-        voice:
-          type: boolean
-          default: false
-      required:
-        - text
-
-    AskAIRequest:
-      type: object
-      properties:
-        question:
-          type: string
-          description: Question for AI to answer
-          example: "How do I optimize React rendering?"
-        context:
-          type: string
-          description: Optional context (project, file, etc)
-        voice:
-          type: boolean
-          default: false
-      required:
-        - question
-
-    # Data Schemas
-    InboxItem:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Unique identifier
-        text:
-          type: string
-        category:
-          type: string
-          enum: [task, bug, feature, idea, note, reminder, gig]
-        priority:
-          type: string
-          enum: [low, medium, high]
-        status:
-          type: string
-          enum: [inbox, in-progress, done, blocked]
-        project:
-          type: string
-        dueDate:
-          type: string
-          format: date-time
-        gigData:
-          type: object
-          properties:
-            client:
-              type: string
-            amount:
-              type: number
-            invoiced:
-              type: boolean
-        timestamp:
-          type: string
-          format: date-time
-
-    Guide:
-      type: object
-      properties:
-        filename:
-          type: string
-        title:
-          type: string
-        category:
-          type: string
-          enum: [guide, tutorial, reference, snippet, checklist]
-        savedAt:
-          type: string
-          format: date-time
-        size:
-          type: integer
-          description: File size in bytes
-
 paths:
-  # ===== CORE COMMANDS =====
+  # ===== EMAIL (PRIMARY) =====
+  /webhook/email/gmail:
+    post:
+      operationId: sendEmailGmail
+      summary: Send email via Gmail SMTP
+      description: |
+        **PRIMARY EMAIL ENDPOINT — USE THIS FOR ALL EMAIL REQUESTS**
+        
+        Sends email via Gmail SMTP on Termux.
+        Always try this first for any email request.
+        
+        **Examples:**
+        - "Send an email to john@example.com saying Hello"
+        - "Email the client about the project"
+        - "Send invoice to ACME Corp"
+      tags:
+        - Email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - to
+                - subject
+                - body
+              properties:
+                to:
+                  type: string
+                  example: "john@example.com"
+                  description: Recipient email address
+                subject:
+                  type: string
+                  example: "Project Update"
+                  description: Email subject line
+                body:
+                  type: string
+                  example: "Hi John, here's the update..."
+                  description: Email body (plain text or HTML)
+                cc:
+                  type: string
+                  description: Optional CC recipients (comma-separated)
+                bcc:
+                  type: string
+                  description: Optional BCC recipients (comma-separated)
+      responses:
+        "200":
+          description: Email sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TextResponse"
+        "400":
+          description: Missing required fields
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /webhook/email/outlook:
+    post:
+      operationId: sendEmailOutlook
+      summary: Send email via Outlook SMTP
+      description: |
+        Alternative email endpoint using Outlook/Office365 SMTP.
+        Use if Gmail fails or for Outlook-specific accounts.
+      tags:
+        - Email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - to
+                - subject
+                - body
+              properties:
+                to:
+                  type: string
+                  example: "john@example.com"
+                subject:
+                  type: string
+                  example: "Project Update"
+                body:
+                  type: string
+                  example: "Hi John, here's the update..."
+                cc:
+                  type: string
+                  description: Optional CC recipients
+                bcc:
+                  type: string
+                  description: Optional BCC recipients
+      responses:
+        "200":
+          description: Email sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TextResponse"
+
+  # ===== CAPTURE & SMART COMMANDS =====
   /webhook/smart:
     post:
       operationId: smartCommand
       summary: Universal AI command router
       description: |
         Intelligently interprets natural language and routes to appropriate action.
+        Use this for requests that don't fit other specific endpoints.
         
         **Examples:**
-        - "capture: write a guide on testing" → Saves guide
-        - "done: fix login bug" → Marks task complete
-        - "plan: build new dashboard" → Creates plan
-        - "what's my focus?" → Returns priority task
+        - "capture: add support for dark mode"
+        - "what's my focus today?"
+        - "plan: build new dashboard"
       tags:
         - Core Commands
       requestBody:
@@ -279,43 +210,35 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/SmartRequest"
-            examples:
-              capture:
-                value:
-                  text: "capture: add dark mode support"
-              query:
-                value:
-                  text: "what should I focus on?"
-                  voice: true
+              type: object
+              properties:
+                text:
+                  type: string
+                  description: Natural language command
+                voice:
+                  type: boolean
+                  default: false
+              required:
+                - text
       responses:
         "200":
-          description: Command processed successfully
+          description: Command processed
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/TextResponse"
-        "400":
-          description: Invalid request
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
-          description: Unauthorized (invalid/missing API key)
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
 
-  # ===== CAPTURE & INBOX =====
   /webhook/capture:
     post:
       operationId: captureItem
-      summary: Capture a note, task, idea, or reminder
+      summary: Capture task, note, or idea
       description: |
-        Saves item to inbox. AI automatically classifies priority and category.
-        Triggers GitHub sync.
+        Save anything to inbox. AI classifies priority automatically.
+        
+        **Examples:**
+        - "Fix login bug"
+        - "Call client tomorrow"
+        - "New feature idea"
       tags:
         - Capture & Inbox
       requestBody:
@@ -323,76 +246,41 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CaptureRequest"
+              type: object
+              properties:
+                text:
+                  type: string
+                  description: What to capture
+                source:
+                  type: string
+                  enum: [gpt, voice, mobile]
+                  default: gpt
+                category:
+                  type: string
+                  enum: [task, bug, feature, note, reminder]
+                voice:
+                  type: boolean
+                  default: false
+              required:
+                - text
       responses:
         "200":
-          description: Item captured and synced
+          description: Item captured
           content:
             application/json:
               schema:
-                allOf:
-                  - $ref: "#/components/schemas/TextResponse"
-                  - type: object
-                    properties:
-                      data:
-                        type: object
-                        properties:
-                          id:
-                            type: string
-                          category:
-                            type: string
-                          priority:
-                            type: string
-
-  /webhook/inbox:
-    get:
-      operationId: getInbox
-      summary: View pending inbox items
-      description: Returns current pending tasks, notes, and ideas awaiting action.
-      tags:
-        - Capture & Inbox
-      parameters:
-        - name: category
-          in: query
-          schema:
-            type: string
-            enum: [task, bug, feature, idea, note, reminder, gig]
-          description: Filter by category
-        - name: priority
-          in: query
-          schema:
-            type: string
-            enum: [low, medium, high]
-          description: Filter by priority
-        - name: project
-          in: query
-          schema:
-            type: string
-          description: Filter by project
-      responses:
-        "200":
-          description: Inbox summary
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                  count:
-                    type: integer
-                  summary:
-                    type: string
-                  items:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/InboxItem"
+                $ref: "#/components/schemas/TextResponse"
 
   /webhook/done:
     post:
       operationId: markDone
-      summary: Mark a task as complete
-      description: Fuzzy matches description to pending items and marks as done.
+      summary: Mark task as complete
+      description: |
+        Fuzzy matches description and marks task done.
+        
+        **Examples:**
+        - "done: fix login bug"
+        - "completed: email client"
       tags:
         - Capture & Inbox
       requestBody:
@@ -400,7 +288,16 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/DoneRequest"
+              type: object
+              properties:
+                text:
+                  type: string
+                  description: Task description (fuzzy matched)
+                voice:
+                  type: boolean
+                  default: false
+              required:
+                - text
       responses:
         "200":
           description: Task marked complete
@@ -414,9 +311,7 @@ paths:
     get:
       operationId: morningBriefing
       summary: Get morning briefing
-      description: |
-        Returns today's priorities, pending work, and an encouraging start.
-        Syncs latest inbox state from GitHub.
+      description: Today's priorities and quick wins
       tags:
         - Daily Routines
       parameters:
@@ -425,7 +320,6 @@ paths:
           schema:
             type: string
             enum: ["1"]
-          description: Return plain text (suitable for TTS)
       responses:
         "200":
           description: Morning briefing
@@ -437,8 +331,8 @@ paths:
   /webhook/nudge:
     get:
       operationId: getNudge
-      summary: Get a productivity nudge
-      description: Returns ONE specific action to focus on right now.
+      summary: Get focus recommendation
+      description: What to work on RIGHT NOW
       tags:
         - Daily Routines
       parameters:
@@ -459,7 +353,7 @@ paths:
     get:
       operationId: eveningReview
       summary: Get evening wrap-up
-      description: Summarizes day, acknowledges wins, and plans tomorrow.
+      description: Day summary and tomorrow plan
       tags:
         - Daily Routines
       parameters:
@@ -479,8 +373,8 @@ paths:
   /webhook/daily-standup:
     get:
       operationId: dailyStandup
-      summary: Get daily standup summary
-      description: Returns yesterday's accomplishments, today's plan, and blockers.
+      summary: Daily standup
+      description: Yesterday, today, blockers
       tags:
         - Daily Routines
       parameters:
@@ -497,14 +391,17 @@ paths:
               schema:
                 $ref: "#/components/schemas/TextResponse"
 
-  # ===== FREELANCE TRACKING =====
+  # ===== FREELANCE =====
   /webhook/log-gig:
     post:
       operationId: logGig
-      summary: Log a freelance gig
+      summary: Log freelance gig
       description: |
-        Parses gig details (client, amount, description) and saves to inbox.
-        Auto-calculates earnings and syncs to GitHub.
+        Record gig work. Format: "Client - $Amount - Description"
+        
+        **Examples:**
+        - "ACME Corp - $1500 - Build landing page"
+        - "log gig: TechStart - $800 - Website redesign"
       tags:
         - Freelance Tracking
       requestBody:
@@ -512,7 +409,16 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/LogGigRequest"
+              type: object
+              properties:
+                text:
+                  type: string
+                  description: Gig details
+                voice:
+                  type: boolean
+                  default: false
+              required:
+                - text
       responses:
         "200":
           description: Gig logged
@@ -524,9 +430,8 @@ paths:
   /webhook/earnings:
     get:
       operationId: getEarnings
-      summary: Get freelance earnings summary
-      description: |
-        Returns earnings data: total, this month, pending invoices, and active gigs.
+      summary: Get earnings summary
+      description: Total, monthly, pending invoices
       tags:
         - Freelance Tracking
       parameters:
@@ -549,123 +454,17 @@ paths:
               schema:
                 $ref: "#/components/schemas/TextResponse"
 
-  # ===== GITHUB INTEGRATION =====
-  /webhook/github-status:
-    get:
-      operationId: getGitHubStatus
-      summary: Get GitHub project status
-      description: |
-        Returns status of synced GitHub repos including open issues, PRs, and activity.
-      tags:
-        - GitHub Integration
-      parameters:
-        - name: repo
-          in: query
-          schema:
-            type: string
-          description: Filter to specific repo (owner/repo format)
-        - name: voice
-          in: query
-          schema:
-            type: string
-            enum: ["1"]
-      responses:
-        "200":
-          description: GitHub status
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                  totalRepos:
-                    type: integer
-                  totalOpenIssues:
-                    type: integer
-                  totalOpenPRs:
-                    type: integer
-                  repos:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        repo:
-                          type: string
-                        openIssues:
-                          type: integer
-                        openPRs:
-                          type: integer
-
-  /webhook/github-todos:
-    get:
-      operationId: getGitHubTodos
-      summary: Get actionable TODO list from GitHub
-      description: |
-        Returns prioritized list of open issues across repos.
-        Bugs and critical issues sorted first.
-      tags:
-        - GitHub Integration
-      parameters:
-        - name: repo
-          in: query
-          schema:
-            type: string
-          description: Filter to specific repo
-        - name: label
-          in: query
-          schema:
-            type: string
-          description: Filter by label (bug, enhancement, etc)
-        - name: voice
-          in: query
-          schema:
-            type: string
-            enum: ["1"]
-      responses:
-        "200":
-          description: TODO list
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                  totalTodos:
-                    type: integer
-                  todos:
-                    type: array
-                    items:
-                      type: object
-
   # ===== AI ASSISTANCE =====
-  /webhook/ask-ai:
-    post:
-      operationId: askAI
-      summary: Ask AI a question
-      description: General-purpose AI query endpoint. Provides context from projects and inbox.
-      tags:
-        - AI Assistance
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/AskAIRequest"
-      responses:
-        "200":
-          description: AI response
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/TextResponse"
-
   /webhook/plan:
     post:
       operationId: planWork
       summary: AI planning assistant
-      description: Creates a plan or breaks down a goal into actionable steps.
+      description: |
+        Break down goal into actionable steps.
+        
+        **Examples:**
+        - "plan: build mobile app"
+        - "create plan for refactoring auth"
       tags:
         - AI Assistance
       requestBody:
@@ -677,7 +476,7 @@ paths:
               properties:
                 text:
                   type: string
-                  description: Goal or project to plan
+                  description: Goal to plan
               required:
                 - text
       responses:
@@ -688,11 +487,38 @@ paths:
               schema:
                 $ref: "#/components/schemas/TextResponse"
 
+  /webhook/create-task:
+    post:
+      operationId: createTask
+      summary: AI-structured task
+      description: AI parses natural language into structured task
+      tags:
+        - AI Assistance
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                text:
+                  type: string
+                  description: Task description
+              required:
+                - text
+      responses:
+        "200":
+          description: Task created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TextResponse"
+
   /webhook/code-review:
     post:
       operationId: codeReview
       summary: AI code review
-      description: Reviews git changes in a project using AI.
+      description: Review git changes in project
       tags:
         - AI Assistance
       requestBody:
@@ -705,20 +531,21 @@ paths:
                 project:
                   type: string
                   default: gratog
-                  description: Project directory name
+              required:
+                - project
       responses:
         "200":
-          description: Code review results
+          description: Code review
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/TextResponse"
 
-  /webhook/create-task:
+  /webhook/ask-ai:
     post:
-      operationId: createTask
-      summary: AI-structured task creation
-      description: AI parses natural language into structured task with priority, category, next action.
+      operationId: askAI
+      summary: Ask AI a question
+      description: General-purpose AI query
       tags:
         - AI Assistance
       requestBody:
@@ -728,27 +555,173 @@ paths:
             schema:
               type: object
               properties:
-                text:
+                question:
                   type: string
-                  description: Natural language task description
+                  description: Question for AI
+                voice:
+                  type: boolean
+                  default: false
               required:
-                - text
+                - question
       responses:
         "200":
-          description: Task created
+          description: AI response
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/TextResponse"
 
-  # ===== GUIDES & KNOWLEDGE BASE =====
+  # ===== ANDROID CONTROL =====
+  /webhook/android-action:
+    post:
+      operationId: androidAction
+      summary: Perform Android action
+      description: |
+        Execute actions on Android: SMS, calls, notifications, clipboard, etc.
+        
+        **Actions:** save-note, post-tweet, open-url, send-sms, call, set-alarm, clipboard-set, clipboard-get, notify, tts
+      tags:
+        - Android Device Control
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                action:
+                  type: string
+                  enum: [save-note, post-tweet, open-url, send-sms, call, set-alarm, clipboard-set, clipboard-get, notify, tts]
+                data:
+                  type: object
+              required:
+                - action
+      responses:
+        "200":
+          description: Action completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TextResponse"
+
+  /webhook/open-app:
+    post:
+      operationId: openApp
+      summary: Launch Android app
+      description: Open an app on the phone
+      tags:
+        - Android Device Control
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                app:
+                  type: string
+                  description: App name (chrome, spotify, keep, x, whatsapp, etc)
+              required:
+                - app
+      responses:
+        "200":
+          description: App opened
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TextResponse"
+
+  /webhook/share-to-app:
+    post:
+      operationId: shareToApp
+      summary: Share text to an app
+      description: Share content to Keep, X, WhatsApp, etc
+      tags:
+        - Android Device Control
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                app:
+                  type: string
+                  description: App name (keep, x, whatsapp, telegram, gmail, instagram)
+                text:
+                  type: string
+                  description: Content to share
+                title:
+                  type: string
+                  description: Optional title
+              required:
+                - app
+                - text
+      responses:
+        "200":
+          description: Content shared
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TextResponse"
+
+  # ===== GITHUB =====
+  /webhook/github-status:
+    get:
+      operationId: getGitHubStatus
+      summary: Get GitHub status
+      description: Open issues and PRs across repos
+      tags:
+        - GitHub Integration
+      parameters:
+        - name: repo
+          in: query
+          schema:
+            type: string
+        - name: voice
+          in: query
+          schema:
+            type: string
+            enum: ["1"]
+      responses:
+        "200":
+          description: GitHub status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TextResponse"
+
+  /webhook/github-todos:
+    get:
+      operationId: getGitHubTodos
+      summary: Get TODO list from GitHub
+      description: Prioritized issues across repos
+      tags:
+        - GitHub Integration
+      parameters:
+        - name: repo
+          in: query
+          schema:
+            type: string
+        - name: voice
+          in: query
+          schema:
+            type: string
+            enum: ["1"]
+      responses:
+        "200":
+          description: TODO list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TextResponse"
+
+  # ===== GUIDES =====
   /webhook/send-guide:
     post:
       operationId: sendGuide
-      summary: Send a guide or document to Termux
-      description: |
-        Delivers a guide, tutorial, or documentation to the Termux environment.
-        Saved as Markdown and tracked in inbox.
+      summary: Send guide/documentation to Termux
+      description: Deliver guide, tutorial, or reference
       tags:
         - Guides & Knowledge Base
       requestBody:
@@ -760,17 +733,12 @@ paths:
               properties:
                 title:
                   type: string
-                  description: Title of the guide
                 content:
                   type: string
-                  description: Full content in Markdown format
                 category:
                   type: string
                   enum: [guide, tutorial, reference, snippet, checklist]
                   default: guide
-                voice:
-                  type: boolean
-                  default: false
               required:
                 - title
                 - content
@@ -786,7 +754,7 @@ paths:
     get:
       operationId: listGuides
       summary: List saved guides
-      description: Returns all guides saved to Termux, with optional filtering.
+      description: All guides with optional filtering
       tags:
         - Guides & Knowledge Base
       parameters:
@@ -794,12 +762,6 @@ paths:
           in: query
           schema:
             type: string
-          description: Filter by category
-        - name: voice
-          in: query
-          schema:
-            type: string
-            enum: ["1"]
       responses:
         "200":
           description: List of guides
@@ -814,14 +776,12 @@ paths:
                     type: integer
                   guides:
                     type: array
-                    items:
-                      $ref: "#/components/schemas/Guide"
 
   /webhook/guide/{filename}:
     get:
       operationId: getGuide
-      summary: Get a specific guide's content
-      description: Returns the full markdown content of a saved guide.
+      summary: Get guide content
+      description: Full markdown content of a guide
       tags:
         - Guides & Knowledge Base
       parameters:
@@ -830,12 +790,6 @@ paths:
           required: true
           schema:
             type: string
-          description: Guide filename (with or without .md extension)
-        - name: voice
-          in: query
-          schema:
-            type: string
-            enum: ["1"]
       responses:
         "200":
           description: Guide content
@@ -844,254 +798,12 @@ paths:
               schema:
                 type: string
 
-  # ===== ANDROID DEVICE CONTROL =====
-  /webhook/android-action:
-    post:
-      operationId: androidAction
-      summary: Perform Android action
-      description: |
-        Execute Android automations via Tasker.
-        
-        **Available actions:**
-        - `save-note`: Save to Google Keep
-        - `post-tweet`: Post to X/Twitter
-        - `open-url`: Open URL in browser
-        - `send-sms`: Send text message
-        - `call`: Make phone call
-        - `set-alarm`: Set alarm
-        - `clipboard-set`: Copy to clipboard
-        - `clipboard-get`: Get clipboard content
-        - `notify`: Send notification
-        - `tts`: Text-to-speech
-      tags:
-        - Android Device Control
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                action:
-                  type: string
-                  enum:
-                    - save-note
-                    - post-tweet
-                    - open-url
-                    - send-sms
-                    - call
-                    - set-alarm
-                    - clipboard-set
-                    - clipboard-get
-                    - notify
-                    - tts
-                data:
-                  type: object
-                  description: Action-specific data
-              required:
-                - action
-      responses:
-        "200":
-          description: Action completed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/TextResponse"
-
-  /webhook/open-app:
-    post:
-      operationId: openApp
-      summary: Open an Android app
-      description: |
-        Launch an app on the user's Android device.
-        
-        **Available apps:** chrome, firefox, instagram, spotify, keep, x, whatsapp, telegram, gmail
-      tags:
-        - Android Device Control
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                app:
-                  type: string
-                  description: App name
-                url:
-                  type: string
-                  description: Optional URL to open in app
-              required:
-                - app
-      responses:
-        "200":
-          description: App opened
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/TextResponse"
-
-  /webhook/share-to-app:
-    post:
-      operationId: shareToApp
-      summary: Share text to an app
-      description: Share content to apps (Keep, X, WhatsApp, Telegram, Gmail, Instagram).
-      tags:
-        - Android Device Control
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                app:
-                  type: string
-                  description: Target app (keep, x, whatsapp, telegram, gmail, instagram)
-                text:
-                  type: string
-                  description: Text content to share
-                title:
-                  type: string
-                  description: Optional title/subject
-              required:
-                - app
-                - text
-      responses:
-        "200":
-          description: Content shared
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/TextResponse"
-
-  # ===== FILE MANAGEMENT =====
-  /webhook/files:
-    get:
-      operationId: queryFiles
-      summary: Search synced project files
-      description: |
-        Query the synced filesystem to find files by name or path.
-        Use to understand project structure and locate specific files.
-      tags:
-        - File Management
-      parameters:
-        - name: q
-          in: query
-          schema:
-            type: string
-          description: Search query (matches file paths)
-        - name: dir
-          in: query
-          schema:
-            type: string
-          description: Limit to specific project directory
-        - name: type
-          in: query
-          schema:
-            type: string
-            enum: [file, directory]
-          description: Filter by type
-      responses:
-        "200":
-          description: Matching files
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  query:
-                    type: string
-                  totalMatches:
-                    type: integer
-                  files:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        path:
-                          type: string
-                        type:
-                          type: string
-                        source:
-                          type: string
-
-  /webhook/file-context:
-    get:
-      operationId: getFileContext
-      summary: Get project structure summary
-      description: |
-        Returns a summary of a synced project's structure including
-        file types, top directories, and sample files.
-      tags:
-        - File Management
-      parameters:
-        - name: dir
-          in: query
-          required: true
-          schema:
-            type: string
-          description: Project directory name
-        - name: voice
-          in: query
-          schema:
-            type: string
-            enum: ["1"]
-      responses:
-        "200":
-          description: Project context
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  directory:
-                    type: string
-                  syncedAt:
-                    type: string
-                    format: date-time
-                  totalFiles:
-                    type: integer
-                  topDirectories:
-                    type: array
-                    items:
-                      type: string
-                  fileTypes:
-                    type: object
-
-  /webhook/sync-files:
-    post:
-      operationId: syncFiles
-      summary: Sync project files
-      description: Triggers file sync for a project directory with GitHub.
-      tags:
-        - File Management
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                dir:
-                  type: string
-                  description: Project directory to sync
-              required:
-                - dir
-      responses:
-        "200":
-          description: Sync complete
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/TextResponse"
-
   # ===== UTILITY =====
   /webhook/health:
     get:
       operationId: healthCheck
       summary: Health check
-      description: Verify API is running and synced.
+      description: Verify API is running and synced
       tags:
         - Utility
       responses:
@@ -1110,15 +822,27 @@ paths:
                     type: string
                   synced:
                     type: boolean
-                  timestamp:
-                    type: string
-                    format: date-time
+
+  /webhook/inbox:
+    get:
+      operationId: getInbox
+      summary: Get pending inbox
+      description: Current tasks, notes, ideas
+      tags:
+        - Utility
+      responses:
+        "200":
+          description: Inbox items
+          content:
+            application/json:
+              schema:
+                type: object
 
   /webhook/apps:
     get:
       operationId: listApps
       summary: List controllable apps
-      description: Get list of apps that can be launched or shared to.
+      description: Available Android apps
       tags:
         - Utility
       responses:
@@ -1128,40 +852,25 @@ paths:
             application/json:
               schema:
                 type: object
-                properties:
-                  status:
-                    type: string
-                  launchable:
-                    type: array
-                    items:
-                      type: string
-                  shareable:
-                    type: array
-                    items:
-                      type: string
-                  actions:
-                    type: array
-                    items:
-                      type: string
 
 tags:
+  - name: Email
+    description: Email sending (PRIMARY)
   - name: Core Commands
-    description: Universal smart commands
+    description: Smart router
   - name: Capture & Inbox
-    description: Task capture and inbox management
+    description: Task capture, completion
   - name: Daily Routines
-    description: Morning, nudges, evening, and standup
+    description: Morning, nudges, evening
   - name: Freelance Tracking
-    description: Gig logging and earnings
+    description: Gigs and earnings
+  - name: AI Assistance
+    description: Planning, review, analysis
+  - name: Android Device Control
+    description: Android actions and apps
   - name: GitHub Integration
     description: GitHub status and issues
-  - name: AI Assistance
-    description: AI-powered planning and analysis
   - name: Guides & Knowledge Base
-    description: Documentation and guides
-  - name: Android Device Control
-    description: Android actions and app control
-  - name: File Management
-    description: File search and sync
+    description: Documentation
   - name: Utility
-    description: Health checks and lists
+    description: Health, inbox, apps
