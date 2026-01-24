@@ -660,6 +660,78 @@
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
         }
+
+        /* Filter Buttons */
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            border: 2px solid var(--lighter);
+            background: var(--bg);
+            border-radius: 999px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            color: var(--text);
+        }
+
+        .filter-btn:hover {
+            border-color: var(--primary);
+            background: #f0f4ff;
+        }
+
+        .filter-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .filter-select {
+            padding: 0.5rem 1rem;
+            border: 2px solid var(--lighter);
+            background: var(--bg);
+            border-radius: 999px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        /* Category badges in breakdown */
+        .category-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: var(--light);
+            color: var(--text);
+        }
+
+        .category-badge.task { background: #dbeafe; color: #1e40af; }
+        .category-badge.gig { background: #dcfce7; color: #166534; }
+        .category-badge.reminder { background: #fef3c7; color: #b45309; }
+        .category-badge.note { background: #f3e8ff; color: #7c3aed; }
+        .category-badge.guide { background: #fce7f3; color: #be185d; }
+
+        /* Inbox item expanded state */
+        .inbox-item.expanded {
+            background: linear-gradient(135deg, #eef2ff 0%, #f0fdf4 100%);
+        }
+
+        .inbox-item-details {
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--lighter);
+            font-size: 0.85rem;
+            color: var(--text-light);
+        }
     </style>
 </head>
 <body>
@@ -685,6 +757,45 @@
         <div class="main-grid">
             <!-- Left Column: Inbox & Reminders -->
             <div>
+                <!-- Quick Capture Card -->
+                <div class="card" style="margin-bottom: 2rem;">
+                    <div class="card-header">
+                        <div class="card-icon">✏️</div>
+                        <div>
+                            <div class="card-title">Quick Capture</div>
+                            <div class="card-subtitle">Add new items to your inbox</div>
+                        </div>
+                    </div>
+                    <form id="captureForm" onsubmit="submitCapture(event)">
+                        <input type="text" id="captureText" class="command-input" placeholder="What's on your mind?" required style="margin-bottom: 0.75rem;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 0.75rem;">
+                            <select id="captureCategory" class="command-input" style="margin-bottom: 0;">
+                                <option value="task">📝 Task</option>
+                                <option value="reminder">⏰ Reminder</option>
+                                <option value="gig">💰 Gig</option>
+                                <option value="note">📒 Note</option>
+                            </select>
+                            <select id="capturePriority" class="command-input" style="margin-bottom: 0;">
+                                <option value="medium">🟡 Medium</option>
+                                <option value="high">🔴 High</option>
+                                <option value="low">🔵 Low</option>
+                            </select>
+                            <button type="submit" class="btn btn-primary" style="white-space: nowrap;">➕ Add</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Sync Status Card -->
+                <div class="card" style="margin-bottom: 2rem; padding: 1rem 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-size: 0.85rem; color: var(--text-light);">Last synced: <span id="lastSyncDisplay">never</span></div>
+                            <div id="staleWarning" style="font-size: 0.75rem; color: var(--warning); display: none;">⚠️ Data may be stale (>4 hours old)</div>
+                        </div>
+                        <button class="btn btn-secondary" onclick="refreshData()" style="padding: 0.5rem 1rem; font-size: 0.85rem;">🔄 Sync Now</button>
+                    </div>
+                </div>
+
                 <!-- Inbox Card -->
                 <div class="card">
                     <div class="card-header">
@@ -695,19 +806,42 @@
                         </div>
                     </div>
 
-                    <div class="stats">
+                    <div class="stats" style="grid-template-columns: repeat(4, 1fr);">
+                        <div class="stat">
+                            <div class="stat-value" id="totalItems">0</div>
+                            <div class="stat-label">Total</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value" id="highPriority">0</div>
+                            <div class="stat-label">🔴 High</div>
+                        </div>
                         <div class="stat">
                             <div class="stat-value" id="activeTasks">0</div>
                             <div class="stat-label">Active</div>
                         </div>
                         <div class="stat">
                             <div class="stat-value" id="gigs">0</div>
-                            <div class="stat-label">Gigs</div>
+                            <div class="stat-label">💰 Gigs</div>
                         </div>
-                        <div class="stat">
-                            <div class="stat-value" id="highPriority">0</div>
-                            <div class="stat-label">High</div>
-                        </div>
+                    </div>
+
+                    <!-- Category Breakdown -->
+                    <div id="categoryBreakdown" style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem;"></div>
+
+                    <!-- Filters -->
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem;">
+                        <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">All</button>
+                        <button class="filter-btn" data-filter="high" onclick="setFilter('high')">🔴 High Priority</button>
+                        <button class="filter-btn" data-filter="active" onclick="setFilter('active')">✅ Active</button>
+                        <button class="filter-btn" data-filter="gig" onclick="setFilter('gig')">💰 Gigs</button>
+                        <select id="categoryFilter" class="filter-select" onchange="setFilter(this.value)">
+                            <option value="all">All Categories</option>
+                            <option value="task">📝 Tasks</option>
+                            <option value="reminder">⏰ Reminders</option>
+                            <option value="gig">💰 Gigs</option>
+                            <option value="note">📒 Notes</option>
+                            <option value="guide">📚 Guides</option>
+                        </select>
                     </div>
 
                     <div class="inbox-list" id="inboxList">
@@ -885,9 +1019,12 @@ Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Fo
     </footer>
 
     <script>
-        const API_BASE = 'https://solospace.codewithsolo.com';
+        const API_BASE = 'http://localhost:8080';
+        const REMOTE_API = 'https://solospace.codewithsolo.com';
         const BRAIN_DIR = '/.local/share/second-brain';
         let currentItem = null;
+        let currentFilter = 'all';
+        let lastSyncTime = null;
         let brainData = {
             inbox: [],
             reminders: [],
@@ -898,52 +1035,87 @@ Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Fo
         document.addEventListener('DOMContentLoaded', () => {
             loadData();
             setInterval(refreshData, 30000); // Auto-refresh every 30 seconds
+            setInterval(checkStaleData, 60000); // Check staleness every minute
         });
 
         // Load data from API or local files
         async function loadData() {
             let apiAvailable = false;
+            let dataSource = 'none';
             
+            // Try localhost:8080 API first (Windows Brain Agent)
             try {
-                // Try API first (with timeout)
                 const controller = new AbortController();
                 const timeout = setTimeout(() => controller.abort(), 3000);
                 
-                const inboxResp = await fetch(`${API_BASE}/webhook/inbox`, { 
-                    signal: controller.signal,
-                    mode: 'cors'
+                const inboxResp = await fetch(`${API_BASE}/inbox`, { 
+                    signal: controller.signal
                 });
                 clearTimeout(timeout);
                 
                 if (inboxResp.ok) {
-                    const inbox = await inboxResp.json();
-                    brainData.inbox = inbox.items || [];
+                    const data = await inboxResp.json();
+                    brainData.inbox = Array.isArray(data) ? data : (data.items || []);
                     apiAvailable = true;
-
-                    // Load reminders
-                    const remindersResp = await fetch(`${API_BASE}/webhook/reminders`, { mode: 'cors' });
-                    if (remindersResp.ok) {
-                        const reminders = await remindersResp.json();
-                        brainData.reminders = reminders || [];
-                    }
-
-                    // Load guides
-                    const guidesResp = await fetch(`${API_BASE}/webhook/guides`, { mode: 'cors' });
-                    if (guidesResp.ok) {
-                        const guides = await guidesResp.json();
-                        brainData.guides = guides || [];
-                    }
-                } else {
-                    throw new Error('API response not ok');
+                    dataSource = 'localhost';
+                    console.log('Loaded from localhost:8080:', brainData.inbox.length, 'items');
                 }
             } catch (error) {
-                console.log('API unavailable, trying local fallback:', error.message);
-                apiAvailable = false;
-                await loadLocalData();
+                console.log('localhost:8080 unavailable:', error.message);
             }
             
+            // Try remote API if localhost failed
+            if (!apiAvailable) {
+                try {
+                    const controller = new AbortController();
+                    const timeout = setTimeout(() => controller.abort(), 5000);
+                    
+                    const inboxResp = await fetch(`${REMOTE_API}/webhook/inbox`, { 
+                        signal: controller.signal,
+                        mode: 'cors'
+                    });
+                    clearTimeout(timeout);
+                    
+                    if (inboxResp.ok) {
+                        const inbox = await inboxResp.json();
+                        brainData.inbox = inbox.items || [];
+                        apiAvailable = true;
+                        dataSource = 'remote';
+                        console.log('Loaded from remote API:', brainData.inbox.length, 'items');
+
+                        // Load reminders from remote
+                        try {
+                            const remindersResp = await fetch(`${REMOTE_API}/webhook/reminders`, { mode: 'cors' });
+                            if (remindersResp.ok) {
+                                brainData.reminders = await remindersResp.json() || [];
+                            }
+                        } catch (e) {}
+
+                        // Load guides from remote
+                        try {
+                            const guidesResp = await fetch(`${REMOTE_API}/webhook/guides`, { mode: 'cors' });
+                            if (guidesResp.ok) {
+                                brainData.guides = await guidesResp.json() || [];
+                            }
+                        } catch (e) {}
+                    }
+                } catch (error) {
+                    console.log('Remote API unavailable:', error.message);
+                }
+            }
+            
+            // Fallback to local file
+            if (!apiAvailable) {
+                await loadLocalData();
+                dataSource = 'local';
+            }
+            
+            // Update sync time
+            lastSyncTime = new Date();
+            updateSyncDisplay();
+            
             renderUI();
-            updateStatus(apiAvailable);
+            updateStatus(apiAvailable, dataSource);
         }
 
         // Fallback: Load from local JSON files in same directory
@@ -1039,21 +1211,37 @@ Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Fo
         function renderInbox() {
             const list = document.getElementById('inboxList');
             const count = document.getElementById('inboxCount');
+            const totalItemsEl = document.getElementById('totalItems');
             const activeTasksEl = document.getElementById('activeTasks');
             const gigsEl = document.getElementById('gigs');
             const highPriorityEl = document.getElementById('highPriority');
+            const categoryBreakdown = document.getElementById('categoryBreakdown');
 
             const inbox = brainData.inbox;
-            count.textContent = `${inbox.length} items`;
-
+            
             // Calculate stats
-            const activeTasks = inbox.filter(i => i.status === 'active' && i.category === 'task').length;
+            const total = inbox.length;
+            const activeTasks = inbox.filter(i => i.status === 'active').length;
             const gigs = inbox.filter(i => i.category === 'gig').length;
             const highPriority = inbox.filter(i => i.priority === 'high').length;
+            
+            // Category breakdown
+            const categories = {};
+            inbox.forEach(item => {
+                const cat = item.category || 'uncategorized';
+                categories[cat] = (categories[cat] || 0) + 1;
+            });
 
+            count.textContent = `${total} items`;
+            totalItemsEl.textContent = total;
             activeTasksEl.textContent = activeTasks;
             gigsEl.textContent = gigs;
             highPriorityEl.textContent = highPriority;
+            
+            // Render category breakdown
+            categoryBreakdown.innerHTML = Object.entries(categories)
+                .map(([cat, num]) => `<span class="category-badge ${cat}">${cat}: ${num}</span>`)
+                .join('');
 
             if (inbox.length === 0) {
                 list.innerHTML = `
@@ -1066,30 +1254,119 @@ Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Fo
                 return;
             }
 
-            // Sort by priority and status
-            const sortedInbox = [...inbox].sort((a, b) => {
+            // Apply filter
+            let filteredInbox = [...inbox];
+            if (currentFilter === 'high') {
+                filteredInbox = filteredInbox.filter(i => i.priority === 'high');
+            } else if (currentFilter === 'active') {
+                filteredInbox = filteredInbox.filter(i => i.status === 'active');
+            } else if (currentFilter === 'gig') {
+                filteredInbox = filteredInbox.filter(i => i.category === 'gig');
+            } else if (currentFilter === 'task') {
+                filteredInbox = filteredInbox.filter(i => i.category === 'task');
+            } else if (currentFilter === 'reminder') {
+                filteredInbox = filteredInbox.filter(i => i.category === 'reminder');
+            } else if (currentFilter === 'note') {
+                filteredInbox = filteredInbox.filter(i => i.category === 'note');
+            } else if (currentFilter === 'guide') {
+                filteredInbox = filteredInbox.filter(i => i.category === 'guide');
+            }
+
+            // Sort: high priority first, then active status, then by timestamp
+            const sortedInbox = filteredInbox.sort((a, b) => {
                 const priorityOrder = { high: 0, medium: 1, low: 2 };
-                const statusOrder = { active: 0, classified: 1, done: 2 };
+                const statusOrder = { active: 0, review: 1, classified: 2, pending: 3, done: 4 };
                 
-                if (statusOrder[a.status] !== statusOrder[b.status]) {
-                    return statusOrder[a.status] - statusOrder[b.status];
-                }
-                return (priorityOrder[a.priority] || 2) - (priorityOrder[b.priority] || 2);
+                // Priority first
+                const pA = priorityOrder[a.priority] ?? 2;
+                const pB = priorityOrder[b.priority] ?? 2;
+                if (pA !== pB) return pA - pB;
+                
+                // Then status
+                const sA = statusOrder[a.status] ?? 3;
+                const sB = statusOrder[b.status] ?? 3;
+                if (sA !== sB) return sA - sB;
+                
+                // Then timestamp (newest first)
+                return new Date(b.timestamp) - new Date(a.timestamp);
             });
 
-            list.innerHTML = sortedInbox.map(item => `
-                <div class="inbox-item ${item.category}" onclick="viewItem(${JSON.stringify(item).replace(/"/g, '&quot;')})">
+            // Show top 10
+            const displayItems = sortedInbox.slice(0, 10);
+            const remaining = sortedInbox.length - 10;
+
+            list.innerHTML = displayItems.map((item, idx) => `
+                <div class="inbox-item ${item.category} ${item.status === 'active' ? 'active' : ''}" 
+                     onclick="toggleItemExpand(this, ${idx})" 
+                     data-item='${JSON.stringify(item).replace(/'/g, "&#39;")}'>
                     <div class="inbox-item-text">
                         <span class="priority-dot ${item.priority || 'medium'}"></span>
                         ${escapeHtml(item.text.substring(0, 100))}${item.text.length > 100 ? '...' : ''}
                     </div>
                     <div class="inbox-item-meta">
-                        <span class="badge ${item.category}">${item.category}</span>
-                        <span class="badge ${item.priority}">${item.priority || 'medium'}</span>
+                        <span class="badge ${item.category}">${item.category || 'task'}</span>
+                        <span class="badge ${item.priority || 'medium'}">${item.priority || 'medium'}</span>
                         <span class="timestamp">${formatTime(item.timestamp)}</span>
                     </div>
                 </div>
-            `).join('');
+            `).join('') + (remaining > 0 ? `
+                <div style="text-align: center; padding: 1rem; color: var(--text-light); font-size: 0.85rem;">
+                    + ${remaining} more items. Use filters to narrow down.
+                </div>
+            ` : '');
+        }
+
+        // Toggle item expansion
+        function toggleItemExpand(el, idx) {
+            const isExpanded = el.classList.contains('expanded');
+            
+            // Remove all expanded states
+            document.querySelectorAll('.inbox-item.expanded').forEach(item => {
+                item.classList.remove('expanded');
+                const details = item.querySelector('.inbox-item-details');
+                if (details) details.remove();
+            });
+            
+            if (!isExpanded) {
+                const item = JSON.parse(el.dataset.item);
+                el.classList.add('expanded');
+                
+                const detailsHtml = `
+                    <div class="inbox-item-details">
+                        <p><strong>Status:</strong> ${item.status || 'unknown'}</p>
+                        ${item.nextAction ? `<p><strong>Next Action:</strong> ${escapeHtml(item.nextAction)}</p>` : ''}
+                        ${item.source ? `<p><strong>Source:</strong> ${item.source}</p>` : ''}
+                        ${item.gigData ? `<p><strong>Client:</strong> ${item.gigData.client} | <strong>Amount:</strong> $${item.gigData.amount}</p>` : ''}
+                        <div style="margin-top: 0.75rem;">
+                            <button class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.8rem;" onclick="event.stopPropagation(); viewItem(${JSON.stringify(item).replace(/"/g, '&quot;')})">View Full Details</button>
+                        </div>
+                    </div>
+                `;
+                el.insertAdjacentHTML('beforeend', detailsHtml);
+            }
+        }
+
+        // Set filter
+        function setFilter(filter) {
+            currentFilter = filter;
+            
+            // Update button states
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.filter === filter) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            // Update select if filter is a category
+            const categorySelect = document.getElementById('categoryFilter');
+            if (['task', 'reminder', 'gig', 'note', 'guide'].includes(filter)) {
+                categorySelect.value = filter;
+            } else if (filter === 'all') {
+                categorySelect.value = 'all';
+            }
+            
+            renderInbox();
         }
 
         // Render Reminders
@@ -1263,14 +1540,17 @@ Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Fo
             loadData();
         }
 
-        function updateStatus(online) {
+        function updateStatus(online, source = 'unknown') {
             const indicator = document.getElementById('statusIndicator');
             const isLocalFile = window.location.protocol === 'file:';
             
-            if (online) {
+            if (online && source === 'localhost') {
                 indicator.className = 'status-indicator online';
-                indicator.innerHTML = '<span class="status-dot"></span><span>Online</span>';
-            } else if (isLocalFile) {
+                indicator.innerHTML = '<span class="status-dot"></span><span>Online (Local Agent)</span>';
+            } else if (online && source === 'remote') {
+                indicator.className = 'status-indicator online';
+                indicator.innerHTML = '<span class="status-dot"></span><span>Online (Remote)</span>';
+            } else if (source === 'local' || isLocalFile) {
                 indicator.className = 'status-indicator online';
                 indicator.innerHTML = '<span class="status-dot"></span><span>Local Mode</span>';
             } else {
@@ -1282,6 +1562,35 @@ Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Fo
         function updateLastSync() {
             const now = new Date();
             document.getElementById('lastSync').textContent = now.toLocaleTimeString();
+        }
+
+        function updateSyncDisplay() {
+            const displayEl = document.getElementById('lastSyncDisplay');
+            const staleWarning = document.getElementById('staleWarning');
+            
+            if (lastSyncTime) {
+                displayEl.textContent = formatTime(lastSyncTime.toISOString());
+                checkStaleData();
+            } else {
+                displayEl.textContent = 'never';
+            }
+        }
+
+        function checkStaleData() {
+            const staleWarning = document.getElementById('staleWarning');
+            if (!lastSyncTime) {
+                staleWarning.style.display = 'block';
+                return;
+            }
+            
+            const now = new Date();
+            const diffHours = (now - lastSyncTime) / (1000 * 60 * 60);
+            
+            if (diffHours > 4) {
+                staleWarning.style.display = 'block';
+            } else {
+                staleWarning.style.display = 'none';
+            }
         }
 
         function formatTime(timestamp) {
@@ -1326,9 +1635,113 @@ Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Fo
             loadData();
         }
 
+        // Submit Quick Capture form
+        async function submitCapture(event) {
+            event.preventDefault();
+            
+            const text = document.getElementById('captureText').value.trim();
+            const category = document.getElementById('captureCategory').value;
+            const priority = document.getElementById('capturePriority').value;
+            
+            if (!text) return;
+            
+            const newItem = {
+                id: generateId(),
+                text: text,
+                category: category,
+                priority: priority,
+                source: 'dashboard',
+                timestamp: new Date().toISOString(),
+                status: 'pending',
+                nextAction: text
+            };
+            
+            // Try to save via API first
+            let saved = false;
+            
+            // Try localhost API
+            try {
+                const response = await fetch(`${API_BASE}/inbox`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newItem)
+                });
+                if (response.ok) {
+                    saved = true;
+                    console.log('Saved to localhost API');
+                }
+            } catch (e) {
+                console.log('localhost save failed:', e.message);
+            }
+            
+            // Try remote API
+            if (!saved) {
+                try {
+                    const response = await fetch(`${REMOTE_API}/webhook/inbox`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(newItem)
+                    });
+                    if (response.ok) {
+                        saved = true;
+                        console.log('Saved to remote API');
+                    }
+                } catch (e) {
+                    console.log('Remote save failed:', e.message);
+                }
+            }
+            
+            // Add to local state regardless
+            brainData.inbox.unshift(newItem);
+            
+            // Clear form
+            document.getElementById('captureText').value = '';
+            document.getElementById('captureCategory').value = 'task';
+            document.getElementById('capturePriority').value = 'medium';
+            
+            // Re-render
+            renderInbox();
+            
+            // Show feedback
+            if (saved) {
+                showToast('✅ Item added and synced!');
+            } else {
+                showToast('⚠️ Added locally (sync when online)');
+            }
+        }
+        
+        function generateId() {
+            return Math.random().toString(36).substring(2, 10);
+        }
+        
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 2rem;
+                left: 50%;
+                transform: translateX(-50%);
+                background: var(--dark);
+                color: white;
+                padding: 1rem 2rem;
+                border-radius: 8px;
+                box-shadow: var(--shadow-lg);
+                z-index: 9999;
+                animation: slideUp 0.3s ease;
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'fadeIn 0.3s ease reverse';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
         // Placeholder functions for modals
         function openCaptureModal() {
-            alert('Open capture modal - not yet implemented');
+            // Focus the quick capture input
+            document.getElementById('captureText').focus();
         }
 
         function openEmailModal() {
@@ -1336,22 +1749,46 @@ Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Fo
         }
 
         async function syncBrain() {
-            const btn = event.target;
-            btn.disabled = true;
-            btn.textContent = '⏳ Syncing...';
+            const btn = event?.target;
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = '⏳ Syncing...';
+            }
             
             try {
-                const response = await fetch(`${API_BASE}/webhook/sync`, {
-                    method: 'POST'
-                });
-                const result = await response.json();
-                alert('Brain synced: ' + result.message);
-                loadData();
+                // Try localhost first
+                let synced = false;
+                try {
+                    const response = await fetch(`${API_BASE}/sync`, { method: 'POST' });
+                    if (response.ok) {
+                        synced = true;
+                        showToast('✅ Synced with local agent');
+                    }
+                } catch (e) {}
+                
+                // Try remote
+                if (!synced) {
+                    try {
+                        const response = await fetch(`${REMOTE_API}/webhook/sync`, { method: 'POST' });
+                        if (response.ok) {
+                            synced = true;
+                            showToast('✅ Synced with remote server');
+                        }
+                    } catch (e) {}
+                }
+                
+                if (!synced) {
+                    showToast('⚠️ Sync unavailable, loading local data');
+                }
+                
+                await loadData();
             } catch (error) {
-                alert('Sync failed: ' + error.message);
+                showToast('❌ Sync failed: ' + error.message);
             } finally {
-                btn.disabled = false;
-                btn.textContent = '🔄 Sync Brain';
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = '🔄 Sync Brain';
+                }
             }
         }
 

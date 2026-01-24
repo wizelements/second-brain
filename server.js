@@ -13,9 +13,13 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const { exec, execSync } = require('child_process');
+const CaptureEnricher = require('./ai/enrichment');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+// Initialize enricher (OpenAI or fallback)
+const enricher = new CaptureEnricher(process.env.OPENAI_API_KEY);
 
 // Middleware
 app.use(express.json());
@@ -95,42 +99,79 @@ const emailRoutes = require('./email-routes');
 emailRoutes(app, config);
 
 // ============================================
-// CAPTURE ENDPOINT
+// CAPTURE ENDPOINT (With OpenAI Enrichment)
 // ============================================
 
-app.post('/webhook/capture', (req, res) => {
-  const { type, content, project, files, thread } = req.body;
+app.post('/webhook/capture', async (req, res) => {
+  const { text, content, type, project, source, files, thread } = req.body;
 
-  if (!type || !content) {
-    return res.status(400).json({ error: 'type and content required' });
+  // Support both 'text' (from Google Assistant) and 'content' (legacy)
+  const captureText = text || content;
+  
+  if (!captureText) {
+    return res.status(400).json({ error: 'text or content required' });
   }
 
-  const validTypes = ['learning', 'bug-fix', 'deployment', 'pattern', 'insight', 'note'];
-  if (!validTypes.includes(type)) {
-    return res.status(400).json({ error: `type must be one of: ${validTypes.join(', ')}` });
+  try {
+    // Get recent items for context
+    let recentItems = [];
+    try {
+      if (fs.existsSync(INBOX_FILE)) {
+        const inbox = JSON.parse(fs.readFileSync(INBOX_FILE, 'utf-8'));
+        recentItems = (inbox.items || []).slice(-5); // Last 5 items for context
+      }
+    } catch (e) {
+      console.error('Error reading context items:', e.message);
+    }
+
+    // Enrich with OpenAI or fallback
+    console.log(`📝 Enriching capture from ${source || 'unknown'}...`);
+    const enriched = await enricher.enrich(captureText, recentItems);
+
+    // Create item for inbox
+    const item = {
+      id: `inbox_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      text: captureText,
+      source: source || 'api',
+      timestamp: new Date().toISOString(),
+      status: 'active',
+      ...enriched // Merge enriched data (category, priority, deadline, entities, etc)
+    };
+
+    // Add to inbox.json
+    let inbox = { items: [] };
+    try {
+      if (fs.existsSync(INBOX_FILE)) {
+        inbox = JSON.parse(fs.readFileSync(INBOX_FILE, 'utf-8'));
+      }
+    } catch (e) {
+      console.error('Error reading inbox:', e.message);
+    }
+
+    inbox.items = inbox.items || [];
+    inbox.items.push(item);
+    fs.writeFileSync(INBOX_FILE, JSON.stringify(inbox, null, 2));
+
+    console.log(`✅ Captured: [${item.category}] ${captureText.substring(0, 50)}... (priority: ${item.priority})`);
+
+    // Save raw capture too
+    const filename = `${item.id}.json`;
+    const filepath = path.join(CAPTURES_DIR, filename);
+    fs.writeFileSync(filepath, JSON.stringify(item, null, 2));
+
+    res.json({
+      success: true,
+      item,
+      message: `Captured ${item.category} from ${source || 'api'}`,
+      cost_usd: enriched.cost_usd || 0
+    });
+  } catch (err) {
+    console.error('❌ Capture error:', err.message);
+    res.status(500).json({
+      error: 'Capture failed',
+      message: err.message
+    });
   }
-
-  const capture = {
-    id: `cap_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-    type,
-    content,
-    project: project || 'general',
-    files: files || [],
-    thread: thread || null,
-    timestamp: new Date().toISOString()
-  };
-
-  // Save capture
-  const filename = `${capture.id}.json`;
-  const filepath = path.join(CAPTURES_DIR, filename);
-  fs.writeFileSync(filepath, JSON.stringify(capture, null, 2));
-
-  res.json({
-    success: true,
-    id: capture.id,
-    message: `Captured ${type} for ${capture.project}`,
-    path: filepath
-  });
 });
 
 // ============================================
@@ -230,6 +271,176 @@ app.get('/webhook/inbox', (req, res) => {
   res.json({
     items: inbox.items || [],
     count: (inbox.items || []).length
+  });
+});
+
+// ============================================
+// BRAIN STATUS ENDPOINT (NEW)
+// ============================================
+
+app.get('/api/brain/status', (req, res) => {
+  let inbox = { items: [] };
+  
+  try {
+    if (fs.existsSync(INBOX_FILE)) {
+      inbox = JSON.parse(fs.readFileSync(INBOX_FILE, 'utf-8'));
+    }
+  } catch (e) {
+    console.error('Error reading inbox:', e.message);
+  }
+
+  const items = inbox.items || [];
+  
+  // Count by category
+  const byCat = {
+    tasks: items.filter(i => i.category === 'task' && i.status !== 'archived').length,
+    gigs: items.filter(i => i.category === 'gig' && i.status !== 'archived').length,
+    reminders: items.filter(i => i.category === 'reminder' && i.status !== 'archived').length,
+  };
+
+  // Count by priority
+  const byPriority = {
+    critical: items.filter(i => i.priority === 'critical' && i.status !== 'archived').length,
+    high: items.filter(i => i.priority === 'high' && i.status !== 'archived').length,
+    medium: items.filter(i => i.priority === 'medium' && i.status !== 'archived').length,
+    low: items.filter(i => i.priority === 'low' && i.status !== 'archived').length,
+  };
+
+  // Find overdue items
+  const now = new Date();
+  const overdue = items.filter(i => 
+    i.deadline && new Date(i.deadline) < now && i.status !== 'archived' && i.status !== 'completed'
+  ).length;
+
+  // Get next 3 items by deadline
+  const nextItems = items
+    .filter(i => i.status === 'active' || i.status === 'classified')
+    .sort((a, b) => {
+      if (!a.deadline) return 1;
+      if (!b.deadline) return -1;
+      return new Date(a.deadline) - new Date(b.deadline);
+    })
+    .slice(0, 3)
+    .map(i => ({
+      id: i.id,
+      text: i.text.substring(0, 60),
+      category: i.category,
+      priority: i.priority,
+      deadline: i.deadline
+    }));
+
+  // Calculate gig revenue (if amounts exist)
+  const totalGigValue = items
+    .filter(i => i.category === 'gig' && i.status !== 'archived')
+    .reduce((sum, i) => {
+      const amount = i.entities?.amount || i.gigData?.amount || 0;
+      return sum + (amount || 0);
+    }, 0);
+
+  res.json({
+    timestamp: new Date().toISOString(),
+    total_items: items.length,
+    active_items: items.filter(i => i.status === 'active' || i.status === 'classified').length,
+    archived_items: items.filter(i => i.status === 'archived').length,
+    completed_items: items.filter(i => i.status === 'completed').length,
+    by_category: byCat,
+    by_priority: byPriority,
+    overdue: overdue,
+    total_gig_value: totalGigValue,
+    next_items: nextItems,
+    status: items.length > 0 ? 'healthy' : 'empty'
+  });
+});
+
+// ============================================
+// BRAIN TASKS ENDPOINT (NEW)
+// ============================================
+
+app.get('/api/brain/tasks', (req, res) => {
+  let inbox = { items: [] };
+  
+  try {
+    if (fs.existsSync(INBOX_FILE)) {
+      inbox = JSON.parse(fs.readFileSync(INBOX_FILE, 'utf-8'));
+    }
+  } catch (e) {
+    console.error('Error reading inbox:', e.message);
+  }
+
+  const tasks = (inbox.items || [])
+    .filter(i => i.category === 'task' && (i.status === 'active' || i.status === 'classified'))
+    .sort((a, b) => {
+      // Sort by priority first
+      const priorityOrder = { critical: 0, high: 1, medium: 2, low: 3 };
+      const aPrio = priorityOrder[a.priority] || 2;
+      const bPrio = priorityOrder[b.priority] || 2;
+      if (aPrio !== bPrio) return aPrio - bPrio;
+      
+      // Then by deadline
+      if (a.deadline && b.deadline) {
+        return new Date(a.deadline) - new Date(b.deadline);
+      }
+      if (a.deadline) return -1;
+      if (b.deadline) return 1;
+      
+      // Then by date created
+      return new Date(b.timestamp) - new Date(a.timestamp);
+    })
+    .map(t => ({
+      id: t.id,
+      text: t.text,
+      priority: t.priority,
+      deadline: t.deadline,
+      next_action: t.next_action,
+      tags: t.tags || []
+    }));
+
+  res.json({
+    timestamp: new Date().toISOString(),
+    total: tasks.length,
+    items: tasks
+  });
+});
+
+// ============================================
+// BRAIN GIGS ENDPOINT (NEW)
+// ============================================
+
+app.get('/api/brain/gigs', (req, res) => {
+  let inbox = { items: [] };
+  
+  try {
+    if (fs.existsSync(INBOX_FILE)) {
+      inbox = JSON.parse(fs.readFileSync(INBOX_FILE, 'utf-8'));
+    }
+  } catch (e) {
+    console.error('Error reading inbox:', e.message);
+  }
+
+  const gigs = (inbox.items || [])
+    .filter(i => i.category === 'gig' && (i.status === 'active' || i.status === 'classified'))
+    .sort((a, b) => {
+      const aPrio = a.priority === 'high' ? 0 : 1;
+      const bPrio = b.priority === 'high' ? 0 : 1;
+      return aPrio - bPrio;
+    })
+    .map(g => ({
+      id: g.id,
+      text: g.text,
+      priority: g.priority,
+      amount: g.entities?.amount || g.gigData?.amount || null,
+      client: g.entities?.person || g.gigData?.client || null,
+      deadline: g.deadline,
+      next_action: g.next_action || 'Follow up'
+    }));
+
+  const totalValue = gigs.reduce((sum, g) => sum + (g.amount || 0), 0);
+
+  res.json({
+    timestamp: new Date().toISOString(),
+    total: gigs.length,
+    total_value: totalValue,
+    items: gigs
   });
 });
 
